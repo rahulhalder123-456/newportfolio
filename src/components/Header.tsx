@@ -20,8 +20,8 @@ export default function Header() {
           <span className="font-bold text-lg font-headline">Code Cipher</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link href={projectsHref} className="text-muted-foreground transition-colors hover:text-primary">Projects</Link>
             <Link href={aboutHref} className="text-muted-foreground transition-colors hover:text-primary">About</Link>
+            <Link href={projectsHref} className="text-muted-foreground transition-colors hover:text-primary">Projects</Link>
             <Link href={contactHref} className="text-muted-foreground transition-colors hover:text-primary">Contact</Link>
         </nav>
         <div className="flex items-center space-x-4 ml-6">
