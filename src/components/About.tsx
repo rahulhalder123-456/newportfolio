@@ -1,18 +1,18 @@
-import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const AtomicModel = dynamic(() => import('@/components/AtomicModel'), { 
+    ssr: false,
+    loading: () => <div className="w-full h-full rounded-full bg-card" />
+});
 
 export default function About() {
   return (
     <section id="about" className="w-full py-12 md:py-24 lg:py-32 bg-secondary">
       <div className="container">
         <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-          <Image
-            src="https://placehold.co/600x600.png"
-            alt="About me"
-            width={600}
-            height={600}
-            className="mx-auto aspect-square overflow-hidden rounded-full object-cover"
-            data-ai-hint="developer portrait"
-          />
+          <div className="mx-auto aspect-square w-full max-w-[500px] lg:max-w-[600px] overflow-hidden rounded-full">
+            <AtomicModel />
+          </div>
           <div className="flex flex-col justify-center space-y-4">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">About Me</h2>
