@@ -39,22 +39,25 @@ export default function Projects() {
     setIsLoading(true);
     try {
       const result = await summarizeGithubRepo({ repoUrl: values.repoUrl });
-      const repoPath = new URL(values.repoUrl).pathname;
-      const title = repoPath.split('/').slice(1, 3).join('/');
       
       const newProject: Project = {
         id: new Date().toISOString(),
         url: values.repoUrl,
-        title,
+        title: result.title,
         summary: result.summary,
       };
 
       setProjects(prevProjects => [newProject, ...prevProjects]);
       form.reset();
-      toast({
-        title: "Project Added!",
-        description: "The repository has been summarized and added to your list.",
-      });
+
+      const isErrorSummary = result.summary.toLowerCase().includes('unable') || result.summary.toLowerCase().includes('failed') || result.summary.toLowerCase().includes('error');
+
+      if (!isErrorSummary) {
+        toast({
+          title: "Project Added!",
+          description: "The repository has been summarized and added to your list.",
+        });
+      }
     } catch (error) {
       console.error("Error summarizing repository:", error);
       toast({
