@@ -55,8 +55,6 @@
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
     "@types/three": "^0.166.0",
     "genkit-cli": "^1.8.0",
     "postcss": "^8",
