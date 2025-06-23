@@ -6,14 +6,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { summarizeGithubRepo } from "@/ai/flows/summarize-github-repo";
-import { Loader2, Wand2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import ProjectCard from "./ProjectCard";
 
 const formSchema = z.object({
-  repoUrl: z.string().url("Please enter a valid GitHub repository URL."),
+  title: z.string().min(2, "Title must be at least 2 characters."),
+  summary: z.string().min(10, "Summary must be at least 10 characters."),
+  url: z.string().url("Please enter a valid URL."),
 });
 
 type Project = {
@@ -26,48 +28,31 @@ type Project = {
 export default function Projects() {
   const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      repoUrl: "",
+      title: "",
+      summary: "",
+      url: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    try {
-      const result = await summarizeGithubRepo({ repoUrl: values.repoUrl });
-      
-      const newProject: Project = {
-        id: new Date().toISOString(),
-        url: values.repoUrl,
-        title: result.title,
-        summary: result.summary,
-      };
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    const newProject: Project = {
+      id: new Date().toISOString(),
+      url: values.url,
+      title: values.title,
+      summary: values.summary,
+    };
 
-      setProjects(prevProjects => [newProject, ...prevProjects]);
-      form.reset();
+    setProjects(prevProjects => [newProject, ...prevProjects]);
+    form.reset();
 
-      const isErrorSummary = result.summary.toLowerCase().includes('unable') || result.summary.toLowerCase().includes('failed') || result.summary.toLowerCase().includes('error');
-
-      if (!isErrorSummary) {
-        toast({
-          title: "Project Added!",
-          description: "The repository has been summarized and added to your list.",
-        });
-      }
-    } catch (error) {
-      console.error("Error summarizing repository:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to summarize the repository. Please check the URL and try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    toast({
+      title: "Project Added!",
+      description: "Your new project has been added to the list.",
+    });
   }
 
   return (
@@ -77,19 +62,33 @@ export default function Projects() {
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">My Creations</h2>
             <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Here are some of my projects. Add a new one by pasting a GitHub repository link below.
+              Here are some of my projects. Add a new one using the form below.
             </p>
           </div>
         </div>
 
         <div className="mx-auto max-w-xl my-12">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
               <FormField
                 control={form.control}
-                name="repoUrl"
+                name="title"
                 render={({ field }) => (
-                  <FormItem className="flex-grow">
+                  <FormItem>
+                    <FormLabel>Project Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="My Awesome Project" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project URL</FormLabel>
                     <FormControl>
                       <Input placeholder="https://github.com/your-name/your-repo" {...field} />
                     </FormControl>
@@ -97,13 +96,22 @@ export default function Projects() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={isLoading} className="w-40">
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Wand2 className="mr-2 h-4 w-4" />
+              <FormField
+                control={form.control}
+                name="summary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Summary</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="A short description of the project..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                Summarize
+              />
+              <Button type="submit">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Project
               </Button>
             </form>
           </Form>
@@ -114,7 +122,7 @@ export default function Projects() {
             <ProjectCard key={project.id} {...project} />
           ))}
         </div>
-        {projects.length === 0 && !isLoading && (
+        {projects.length === 0 && (
             <div className="text-center col-span-full py-12">
                 <p className="text-muted-foreground">No projects yet. Add one above to get started!</p>
             </div>
