@@ -37,7 +37,7 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="w-full py-12 md:py-24 lg:py-32">
+    <section id="contact" className="w-full flex items-center justify-center min-h-[100dvh] py-12 md:py-24 lg:py-32 snap-start">
       <div className="container">
         <div className="grid items-center justify-center gap-4 text-center">
           <div className="space-y-3">

@@ -9,7 +9,7 @@ const HackerSphere = dynamic(() => import('@/components/HackerSphere'), {
 
 export default function Hero() {
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden">
+    <section className="relative flex items-center justify-center min-h-[100dvh] overflow-hidden snap-start">
       <HackerSphere />
       <div className="container text-center relative z-10">
         <div className="mx-auto max-w-4xl">
