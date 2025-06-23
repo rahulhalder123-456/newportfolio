@@ -1,4 +1,11 @@
-import HackerSphere from './HackerSphere';
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const HackerSphere = dynamic(() => import('@/components/HackerSphere'), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0 z-0 opacity-30" />,
+});
 
 export default function Hero() {
   return (
