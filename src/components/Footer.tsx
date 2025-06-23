@@ -1,42 +1,63 @@
-import Link from 'next/link';
+'use client';
+
+import { useState, useEffect, useMemo } from 'react';
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
+  
+  // The full text content to be animated
+  const fullFooterText = useMemo(() => 
+`> Code Cipher
+
+[navigation] ./about ./projects ./contact | [socials] open github open linkedin open twitter
+
+© ${currentYear} Code Cipher. All Rights Reserved.`
+  , [currentYear]);
+
+  const [text, setText] = useState('');
+  const [key, setKey] = useState(0); // A key to restart the animation cycle
+
+  useEffect(() => {
+    let typingInterval: NodeJS.Timeout;
+    let repeatTimeout: NodeJS.Timeout;
+    
+    // Reset text for the new animation cycle
+    setText('');
+
+    let i = 0;
+    // Start the typing animation
+    typingInterval = setInterval(() => {
+      if (i < fullFooterText.length) {
+        setText(prev => prev + fullFooterText.charAt(i));
+        i++;
+      } else {
+        clearInterval(typingInterval);
+        // Once typing is complete, wait 2 minutes then repeat
+        repeatTimeout = setTimeout(() => {
+          setKey(prevKey => prevKey + 1);
+        }, 120000); // 2 minutes in milliseconds
+      }
+    }, 50); // Typing speed in milliseconds
+
+    // Cleanup function to clear timers when the component unmounts or the key changes
+    return () => {
+      clearInterval(typingInterval);
+      clearTimeout(repeatTimeout);
+    };
+  }, [key, fullFooterText]);
 
   return (
     <footer className="border-t bg-background font-code">
       <div className="container py-12">
         <div className="flex flex-col items-center gap-8 text-center">
-          
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-primary font-bold">&gt;</span>
-            <span className="font-bold text-xl text-foreground">Code Cipher</span>
-          </Link>
-          
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">[navigation]</span>
-                <nav className="flex items-center gap-4">
-                    <Link href="/#about" className="text-sm text-muted-foreground hover:text-primary transition-colors">./about</Link>
-                    <Link href="/projects" className="text-sm text-muted-foreground hover:text-primary transition-colors">./projects</Link>
-                    <Link href="/#contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">./contact</Link>
-                </nav>
+            {/* Using <pre> to preserve whitespace and newlines, and a min-height to prevent layout shift */}
+            <div className="text-left text-sm text-muted-foreground min-h-[120px]">
+              <pre className="whitespace-pre-wrap">
+                {text}
+                {/* The blinking cursor */}
+                <span className="ml-1 w-2 h-3 bg-primary animate-blink inline-block" />
+              </pre>
             </div>
-            <div className="hidden md:block text-muted-foreground">|</div>
-            <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">[socials]</span>
-                <nav className="flex items-center gap-4">
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">open github</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">open linkedin</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">open twitter</a>
-                </nav>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-center text-xs text-muted-foreground">
-            <span>&copy; {currentYear} Code Cipher. All Rights Reserved.</span>
-            <span className="ml-2 w-2 h-3 bg-primary animate-blink" />
-          </div>
         </div>
       </div>
     </footer>
