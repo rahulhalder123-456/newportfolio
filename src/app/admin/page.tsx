@@ -1,6 +1,8 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,9 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, FileCode, Link } from "lucide-react";
+import { PlusCircle, FileCode, Link as LinkIcon } from "lucide-react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
@@ -28,7 +31,18 @@ type Project = {
 };
 
 export default function AdminPage() {
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const isAuthenticated = sessionStorage.getItem("isAuthenticated");
+    if (isAuthenticated === "true") {
+      setIsAuthorized(true);
+    } else {
+      router.replace("/login");
+    }
+  }, [router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,18 +59,62 @@ export default function AdminPage() {
       ...values,
     };
 
-    const storedProjects = localStorage.getItem("projects");
-    const projects = storedProjects ? JSON.parse(storedProjects) : [];
-    const updatedProjects = [newProject, ...projects];
-    
-    localStorage.setItem("projects", JSON.stringify(updatedProjects));
-    
-    form.reset();
+    try {
+        const storedProjects = localStorage.getItem("projects");
+        const projects = storedProjects ? JSON.parse(storedProjects) : [];
+        const updatedProjects = [newProject, ...projects];
+        
+        localStorage.setItem("projects", JSON.stringify(updatedProjects));
+        
+        form.reset();
 
-    toast({
-      title: "Project Added!",
-      description: "Your new project has been added to the list.",
-    });
+        toast({
+            title: "Project Added!",
+            description: "Your new project has been added to the list.",
+        });
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: "There was a problem saving your project.",
+            variant: "destructive",
+        });
+    }
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+            <div className="container px-4 md:px-6">
+                <div className="mx-auto max-w-2xl">
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-48" />
+                            <Skeleton className="h-4 w-full mt-2" />
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-20 w-full" />
+                            </div>
+                             <Skeleton className="h-10 w-full" />
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   return (
@@ -97,7 +155,7 @@ export default function AdminPage() {
                               <FormItem className="md:col-span-1">
                                   <FormLabel>Project URL</FormLabel>
                                   <div className="relative">
-                                      <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                      <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                       <FormControl>
                                           <Input placeholder="https://github.com/user/repo" {...field} className="pl-10" />
                                       </FormControl>
