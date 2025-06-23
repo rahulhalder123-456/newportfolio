@@ -19,8 +19,9 @@ const formSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
-// A simple, hardcoded password. In a real application, this should be handled securely.
-const CORRECT_PASSWORD = "password123";
+// The password is now stored in an environment variable for better security.
+// In a real application, this should be handled by a proper auth system.
+const CORRECT_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
 export default function LoginPage() {
   const router = useRouter();
