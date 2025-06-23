@@ -120,8 +120,8 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
-      <main className="flex-1">
-        <section id="add-project" className="w-full py-12 md:py-24 lg:py-32">
+      <main className="flex-1 flex items-center justify-center">
+        <section id="add-project" className="w-full">
           <div className="container px-4 md:px-6">
             <div className="mx-auto max-w-2xl">
               <Card>
