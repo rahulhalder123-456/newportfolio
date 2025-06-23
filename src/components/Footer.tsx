@@ -1,30 +1,43 @@
 import Link from 'next/link';
 import { CodeXml } from 'lucide-react';
-import FooterArt from './FooterArt';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative border-t bg-secondary/50 font-code overflow-hidden">
-      <FooterArt />
-      <div className="container relative z-10 py-16 text-center">
-        <div className="flex flex-col items-center gap-6">
+    <footer className="border-t bg-background font-code">
+      <div className="container py-12">
+        <div className="flex flex-col items-center gap-8 text-center">
+          
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-primary font-bold">&gt;</span>
             <CodeXml className="h-6 w-6 text-accent" />
             <span className="font-bold text-xl text-foreground">Code Cipher</span>
           </Link>
           
-          <nav className="flex justify-center gap-6 md:gap-8">
-            <Link href="/#about" className="text-sm text-muted-foreground hover:text-primary transition-colors">./about</Link>
-            <Link href="/projects" className="text-sm text-muted-foreground hover:text-primary transition-colors">./projects</Link>
-            <Link href="/#contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">./contact</Link>
-          </nav>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">[navigation]</span>
+                <nav className="flex items-center gap-4">
+                    <Link href="/#about" className="text-sm text-muted-foreground hover:text-primary transition-colors">./about</Link>
+                    <Link href="/projects" className="text-sm text-muted-foreground hover:text-primary transition-colors">./projects</Link>
+                    <Link href="/#contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">./contact</Link>
+                </nav>
+            </div>
+            <div className="hidden md:block text-muted-foreground">|</div>
+            <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">[socials]</span>
+                <nav className="flex items-center gap-4">
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">./github</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">./linkedin</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">./twitter</a>
+                </nav>
+            </div>
+          </div>
           
-          <div className="flex items-center justify-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center text-xs text-muted-foreground">
             <span>&copy; {currentYear} Code Cipher. All Rights Reserved.</span>
-            <span className="ml-2 w-2 h-4 bg-primary animate-blink" />
+            <span className="ml-2 w-2 h-3 bg-primary animate-blink" />
           </div>
         </div>
       </div>
