@@ -15,46 +15,56 @@ const Bond = ({ start, end }: { start: [number, number, number], end: [number, n
     <Line points={[start, end]} color="hsl(var(--foreground))" lineWidth={3} transparent opacity={0.5} />
 );
 
-const Molecule = () => {
+const NetworkStructure = () => {
     const groupRef = useRef<THREE.Group>(null!);
     
-    const atoms = useMemo(() => {
-        const points = [];
-        points.push({ pos: [0, 0, 0], color: "hsl(var(--primary))", size: 0.4 }); // Central atom
-        const numOuter = 6;
-        const radius = 1.5;
-        for (let i = 0; i < numOuter; i++) {
-            const phi = Math.acos(-1 + (2 * i) / (numOuter -1));
-            const theta = Math.sqrt(numOuter * Math.PI) * phi;
-            points.push({
-                pos: [
-                    Math.cos(theta) * Math.sin(phi) * radius, 
-                    Math.sin(theta) * Math.sin(phi) * radius, 
-                    Math.cos(phi) * radius
-                ],
-                color: "hsl(var(--accent))",
-                size: 0.25
+    const { atoms, bonds } = useMemo(() => {
+        const numAtoms = 30;
+        const volumeSize = 12;
+        const bondThreshold = 2.8;
+        const atomPoints = [];
+
+        // Generate random atom positions
+        for (let i = 0; i < numAtoms; i++) {
+            atomPoints.push({
+                pos: new THREE.Vector3(
+                    (Math.random() - 0.5) * volumeSize,
+                    (Math.random() - 0.5) * (volumeSize / 2),
+                    (Math.random() - 0.5) * (volumeSize / 4)
+                ),
+                color: Math.random() > 0.3 ? "hsl(var(--accent))" : "hsl(var(--primary))",
+                size: Math.random() * 0.2 + 0.15
             });
         }
-        return points;
-    }, []);
 
-    const bonds = useMemo(() => {
-        const centralAtomPos = atoms[0].pos;
-        return atoms.slice(1).map(atom => ({ start: centralAtomPos, end: atom.pos }));
-    }, [atoms]);
+        const generatedBonds = [];
+        // Generate bonds based on proximity
+        for (let i = 0; i < numAtoms; i++) {
+            for (let j = i + 1; j < numAtoms; j++) {
+                const dist = atomPoints[i].pos.distanceTo(atomPoints[j].pos);
+                if (dist < bondThreshold) {
+                    generatedBonds.push({
+                        start: atomPoints[i].pos.toArray(),
+                        end: atomPoints[j].pos.toArray()
+                    });
+                }
+            }
+        }
+
+        return { atoms: atomPoints, bonds: generatedBonds };
+    }, []);
 
     useFrame((state) => {
         if (groupRef.current) {
-            groupRef.current.rotation.x = state.clock.getElapsedTime() * 0.1;
-            groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.2;
+            groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.05;
+            groupRef.current.rotation.x = state.clock.getElapsedTime() * 0.03;
         }
     });
 
     return (
         <group ref={groupRef}>
             {atoms.map((atom, i) => (
-                <Atom key={i} position={atom.pos as [number, number, number]} color={atom.color} size={atom.size} />
+                <Atom key={i} position={atom.pos.toArray() as [number, number, number]} color={atom.color} size={atom.size} />
             ))}
             {bonds.map((bond, i) => (
                 <Bond key={i} start={bond.start as [number, number, number]} end={bond.end as [number, number, number]} />
@@ -66,11 +76,11 @@ const Molecule = () => {
 
 export default function AtomicModel() {
   return (
-    <Canvas camera={{ position: [0, 1, 8], fov: 50 }}>
+    <Canvas camera={{ position: [0, 0, 10], fov: 75 }}>
       <ambientLight intensity={1.5} />
       <pointLight position={[10, 10, 10]} intensity={2} />
       <pointLight position={[-10, -10, -10]} intensity={1} color="hsl(var(--accent))" />
-      <Molecule />
+      <NetworkStructure />
     </Canvas>
   );
 }
