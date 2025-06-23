@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useRef, useMemo } from 'react';
@@ -16,12 +15,20 @@ const WireframeShape = ({ position, rotationSpeed, shapeType }: { position: [num
         }
     });
 
-    const ShapeComponent = shapeType === 'box' ? Box : Octahedron;
+    const material = <meshStandardMaterial color="hsl(var(--primary))" wireframe wireframeLinewidth={2} emissive="hsl(var(--primary))" emissiveIntensity={0.5} />;
 
+    if (shapeType === 'box') {
+        return (
+            <Box ref={ref} position={position} args={[0.3, 0.3, 0.3]}>
+                {material}
+            </Box>
+        );
+    }
+    
     return (
-        <ShapeComponent ref={ref} position={position} args={[0.3, 0.3, 0.3]}>
-            <meshStandardMaterial color="hsl(var(--primary))" wireframe wireframeLinewidth={2} emissive="hsl(var(--primary))" emissiveIntensity={0.5} />
-        </ShapeComponent>
+        <Octahedron ref={ref} position={position} args={[0.3]}>
+            {material}
+        </Octahedron>
     );
 };
 
