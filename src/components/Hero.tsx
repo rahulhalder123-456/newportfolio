@@ -11,7 +11,7 @@ export default function Hero() {
   return (
     <section className="relative py-20 md:py-32 overflow-hidden">
       <HackerSphere />
-      <div className="container text-center relative z-10">
+      <div className="container px-4 md:px-6 text-center relative z-10">
         <div className="mx-auto max-w-4xl">
           <h1 className="text-4xl md:text-7xl font-bold tracking-tighter mb-4 font-headline bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-text-gradient bg-300% ">
             Jane Doe
