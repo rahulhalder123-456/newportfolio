@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { CodeXml } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,7 +10,6 @@ export default function Footer() {
           
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-primary font-bold">&gt;</span>
-            <CodeXml className="h-6 w-6 text-accent" />
             <span className="font-bold text-xl text-foreground">Code Cipher</span>
           </Link>
           
@@ -28,9 +26,9 @@ export default function Footer() {
             <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">[socials]</span>
                 <nav className="flex items-center gap-4">
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">./github</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">./linkedin</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">./twitter</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">open github</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">open linkedin</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">open twitter</a>
                 </nav>
             </div>
           </div>
