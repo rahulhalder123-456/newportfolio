@@ -11,7 +11,7 @@ const sendEmailSchema = z.object({
 
 type SendEmailInput = z.infer<typeof sendEmailSchema>;
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resendApiKey = process.env.RESEND_API_KEY;
 const toEmail = process.env.EMAIL_RECIPIENT;
 
 export async function sendEmail(input: SendEmailInput) {
@@ -28,10 +28,16 @@ export async function sendEmail(input: SendEmailInput) {
       return { error: 'Server configuration error.' };
   }
 
+  if (!resendApiKey || resendApiKey === 'REPLACE_WITH_YOUR_RESEND_API_KEY') {
+    console.error('RESEND_API_KEY environment variable is not set or is a placeholder.');
+    return { error: 'Server configuration error.' };
+  }
+
+  const resend = new Resend(resendApiKey);
   const { name, email, message } = validatedFields.data;
 
   try {
-    const data = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: toEmail,
       subject: `New message from ${name} via portfolio`,
@@ -43,8 +49,8 @@ export async function sendEmail(input: SendEmailInput) {
              <p>${message}</p>`,
     });
 
-    if (data.error) {
-        console.error("Resend error:", data.error);
+    if (error) {
+        console.error("Resend error:", error);
         return { error: 'Failed to send message.' };
     }
 
