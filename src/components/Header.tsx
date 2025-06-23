@@ -8,7 +8,7 @@ export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
 
-  const projectsHref = isHomePage ? '#projects' : '/#projects';
+  const projectsHref = '/projects';
   const aboutHref = isHomePage ? '#about' : '/#about';
   const contactHref = isHomePage ? '#contact' : '/#contact';
 
@@ -20,9 +20,9 @@ export default function Header() {
           <span className="font-bold text-lg font-headline">Code Cipher</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <a href={projectsHref} className="text-muted-foreground transition-colors hover:text-primary">Projects</a>
-            <a href={aboutHref} className="text-muted-foreground transition-colors hover:text-primary">About</a>
-            <a href={contactHref} className="text-muted-foreground transition-colors hover:text-primary">Contact</a>
+            <Link href={projectsHref} className="text-muted-foreground transition-colors hover:text-primary">Projects</Link>
+            <Link href={aboutHref} className="text-muted-foreground transition-colors hover:text-primary">About</Link>
+            <Link href={contactHref} className="text-muted-foreground transition-colors hover:text-primary">Contact</Link>
         </nav>
         <div className="flex items-center space-x-4 ml-6">
             <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Github Profile" className="text-muted-foreground hover:text-primary transition-colors">

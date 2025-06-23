@@ -11,7 +11,13 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <Projects />
+        <Projects
+            className="py-12 md:py-24 lg:py-32" 
+            limit={3} 
+            showViewAllButton={true} 
+            title="Latest Creations"
+            description="Here are a few of my most recent projects. Feel free to explore more of my work on the projects page."
+        />
         <About />
         <Contact />
       </main>
