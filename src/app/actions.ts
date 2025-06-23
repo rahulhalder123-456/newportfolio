@@ -14,6 +14,23 @@ type SendEmailInput = z.infer<typeof sendEmailSchema>;
 const resendApiKey = process.env.RESEND_API_KEY;
 const toEmail = process.env.EMAIL_RECIPIENT;
 
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+        return error.message;
+    }
+    if (typeof error === 'string') {
+        return error;
+    }
+    if (typeof error === 'object' && error !== null) {
+        return JSON.stringify(error);
+    }
+    return 'An unknown error occurred.';
+}
+
+
 export async function sendEmail(input: SendEmailInput) {
   const validatedFields = sendEmailSchema.safeParse(input);
 
@@ -49,19 +66,16 @@ export async function sendEmail(input: SendEmailInput) {
              <p>${message}</p>`,
     });
 
-    // This block handles errors returned by the Resend API
     if (error) {
-        console.error("Resend API returned an error:", error);
-        return { error: `API Error: ${error.message}` };
+        console.error("Resend API Error:", error);
+        return { error: `API Error: ${getErrorMessage(error)}` };
     }
 
     return { success: true };
   } catch (exception) {
-    // This block handles exceptions thrown by the SDK (e.g., network issues)
     console.error("Caught exception in sendEmail:", exception);
-    const errorMessage = exception instanceof Error ? exception.message : 'An unknown exception occurred.';
     return {
-      error: `An unexpected error occurred: ${errorMessage}`,
+      error: `An unexpected error occurred: ${getErrorMessage(exception)}`,
     };
   }
 }
