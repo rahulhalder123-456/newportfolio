@@ -25,12 +25,12 @@ export async function sendEmail(input: SendEmailInput) {
   
   if (!toEmail) {
       console.error("EMAIL_RECIPIENT environment variable not set.");
-      return { error: 'Server configuration error.' };
+      return { error: 'Server configuration error: Missing recipient email.' };
   }
 
   if (!resendApiKey || resendApiKey === 'REPLACE_WITH_YOUR_RESEND_API_KEY') {
     console.error('RESEND_API_KEY environment variable is not set or is a placeholder.');
-    return { error: 'Server configuration error.' };
+    return { error: 'Server configuration error: Missing API Key.' };
   }
 
   const resend = new Resend(resendApiKey);
@@ -50,15 +50,15 @@ export async function sendEmail(input: SendEmailInput) {
     });
 
     if (error) {
-        console.error("Resend error:", error);
-        return { error: 'Failed to send message.' };
+        console.error("Resend API Error:", error);
+        return { error: error.message };
     }
 
     return { success: true };
   } catch (error) {
-    console.error(error);
+    console.error("Unexpected error in sendEmail:", error);
     return {
-      error: 'An unexpected error occurred.',
+      error: 'An unexpected error occurred while trying to send the email.',
     };
   }
 }
