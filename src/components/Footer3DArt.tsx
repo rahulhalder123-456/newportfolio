@@ -24,7 +24,7 @@ const WireframeShape = ({ position, rotationSpeed, shapeType }: { position: [num
         }
     });
 
-    const material = <meshStandardMaterial color={primaryColor} wireframe emissive={primaryColor} emissiveIntensity={0.5} />;
+    const material = <meshBasicMaterial color={primaryColor} wireframe />;
 
     if (shapeType === 'box') {
         return (
@@ -85,8 +85,6 @@ const Scene = () => {
 export default function Footer3DArt() {
   return (
     <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[0, 5, 5]} intensity={1} />
       <Scene />
     </Canvas>
   );
