@@ -8,8 +8,8 @@
  * - SummarizeGithubRepoOutput - The return type for the summarizeGithubRepo function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { defineFlow, defineTool, generate } from 'genkit';
+import { z } from 'genkit/zod';
 
 const SummarizeGithubRepoInputSchema = z.object({
   repoUrl: z
@@ -25,10 +25,17 @@ const SummarizeGithubRepoOutputSchema = z.object({
 export type SummarizeGithubRepoOutput = z.infer<typeof SummarizeGithubRepoOutputSchema>;
 
 export async function summarizeGithubRepo(input: SummarizeGithubRepoInput): Promise<SummarizeGithubRepoOutput> {
+  // Gracefully handle the missing API key at runtime.
+  if (!process.env.GEMINI_API_KEY) {
+    return {
+      title: 'Configuration Error',
+      summary: 'The Gemini API key is missing. Please add GEMINI_API_KEY to your .env file to use this feature.',
+    };
+  }
   return summarizeGithubRepoFlow(input);
 }
 
-const getReadmeContent = ai.defineTool({
+const getReadmeContent = defineTool({
   name: 'getReadmeContent',
   description: 'Fetches the content of the README file from a GitHub repository.',
   inputSchema: z.object({
@@ -77,12 +84,14 @@ const getReadmeContent = ai.defineTool({
   }
 });
 
-const summarizeRepoPrompt = ai.definePrompt({
-  name: 'summarizeRepoPrompt',
-  tools: [getReadmeContent],
-  input: {schema: SummarizeGithubRepoInputSchema},
-  output: {schema: SummarizeGithubRepoOutputSchema},
-  prompt: `You are a seasoned software developer and technical writer. Your task is to analyze a GitHub repository and generate a creative title and a concise summary.
+const summarizeGithubRepoFlow = defineFlow(
+  {
+    name: 'summarizeGithubRepoFlow',
+    inputSchema: SummarizeGithubRepoInputSchema,
+    outputSchema: SummarizeGithubRepoOutputSchema,
+  },
+  async (input) => {
+    const prompt = `You are a seasoned software developer and technical writer. Your task is to analyze a GitHub repository and generate a creative title and a concise summary.
 
 1.  Use the getReadmeContent tool to fetch the content of the README file for the given repoUrl.
 2.  Analyze the result from the tool.
@@ -90,18 +99,23 @@ const summarizeRepoPrompt = ai.definePrompt({
     - If the result is the README content, create a short, catchy title for the project and write a clear and concise summary that explains what the project is about.
     - If the README content is empty or uninformative, create a title from the URL and state that the README was empty.
 
-Repo URL: {{{repoUrl}}}
-`,
-});
+Repo URL: ${input.repoUrl}
+`;
+    
+    const llmResponse = await generate({
+        model: 'gemini-pro',
+        prompt: prompt,
+        tools: [getReadmeContent],
+        output: {
+            format: 'json',
+            schema: SummarizeGithubRepoOutputSchema
+        }
+    });
 
-const summarizeGithubRepoFlow = ai.defineFlow(
-  {
-    name: 'summarizeGithubRepoFlow',
-    inputSchema: SummarizeGithubRepoInputSchema,
-    outputSchema: SummarizeGithubRepoOutputSchema,
-  },
-  async input => {
-    const {output} = await summarizeRepoPrompt(input);
-    return output!;
+    const output = llmResponse.output();
+    if (!output) {
+        throw new Error("Failed to get a structured response from the LLM.");
+    }
+    return output;
   }
 );
