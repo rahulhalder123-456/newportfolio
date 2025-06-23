@@ -1,12 +1,21 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Box, Octahedron } from '@react-three/drei';
 import * as THREE from 'three';
 
 const WireframeShape = ({ position, rotationSpeed, shapeType }: { position: [number, number, number], rotationSpeed: { x: number, y: number }, shapeType: 'box' | 'octahedron' }) => {
     const ref = useRef<THREE.Mesh>(null!);
+    const [primaryColor, setPrimaryColor] = useState('hsl(288 83% 54%)'); // Default fallback
+
+    useEffect(() => {
+        // This effect runs on the client after mount, ensuring document is available.
+        const computedColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+        if (computedColor) {
+            setPrimaryColor(`hsl(${computedColor})`);
+        }
+    }, []);
 
     useFrame(() => {
         if (ref.current) {
@@ -15,7 +24,7 @@ const WireframeShape = ({ position, rotationSpeed, shapeType }: { position: [num
         }
     });
 
-    const material = <meshStandardMaterial color="hsl(var(--primary))" wireframe wireframeLinewidth={2} emissive="hsl(var(--primary))" emissiveIntensity={0.5} />;
+    const material = <meshStandardMaterial color={primaryColor} wireframe emissive={primaryColor} emissiveIntensity={0.5} />;
 
     if (shapeType === 'box') {
         return (
