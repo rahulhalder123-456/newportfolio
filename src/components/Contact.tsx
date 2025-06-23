@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Github, Linkedin, Twitter, Send } from "lucide-react";
+import { Send } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -93,17 +93,6 @@ export default function Contact() {
                 </Button>
               </form>
             </Form>
-          </div>
-          <div className="flex justify-center space-x-4 mt-6">
-            <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Github Profile" className="text-muted-foreground hover:text-primary transition-colors">
-              <Github className="h-6 w-6" />
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="text-muted-foreground hover:text-primary transition-colors">
-              <Linkedin className="h-6 w-6" />
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Twitter Profile" className="text-muted-foreground hover:text-primary transition-colors">
-              <Twitter className="h-6 w-6" />
-            </a>
           </div>
         </div>
       </div>
