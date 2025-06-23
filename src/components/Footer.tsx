@@ -1,71 +1,69 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-
-const Footer3DArt = dynamic(() => import('@/components/Footer3DArt'), { 
-    ssr: false,
-});
 
 export default function Footer() {
   const currentYear = useMemo(() => new Date().getFullYear(), []);
-  
-  // The full text content to be animated
-  const fullFooterText = useMemo(() => 
-`> Code Cipher
+
+  const fullFooterText = useMemo(
+    () => `> Code Cipher
 
 [navigation] ./about ./projects ./contact | [socials] open github open linkedin open twitter
 
-© ${currentYear} Code Cipher. All Rights Reserved.`
-  , [currentYear]);
+© ${currentYear} Code Cipher. All Rights Reserved.`,
+    [currentYear]
+  );
 
   const [text, setText] = useState('');
-  const [key, setKey] = useState(0); // A key to restart the animation cycle
+  const [key, setKey] = useState(0); // Used to reset typing animation
+  const [isComplete, setIsComplete] = useState(false); // Determines if typing is finished
 
   useEffect(() => {
     let typingInterval: NodeJS.Timeout;
     let repeatTimeout: NodeJS.Timeout;
-    
-    // Reset text for the new animation cycle
+
     setText('');
+    setIsComplete(false);
 
     let i = 0;
-    // Start the typing animation
     typingInterval = setInterval(() => {
       if (i < fullFooterText.length) {
-        setText(prev => prev + fullFooterText.charAt(i));
+        setText((prev) => prev + fullFooterText.charAt(i));
         i++;
       } else {
         clearInterval(typingInterval);
-        // Once typing is complete, wait 2 minutes then repeat
+        setIsComplete(true);
         repeatTimeout = setTimeout(() => {
-          setKey(prevKey => prevKey + 1);
-        }, 120000); // 2 minutes in milliseconds
+          setKey((prevKey) => prevKey + 1);
+        }, 120000); // 2 minutes
       }
-    }, 50); // Typing speed in milliseconds
+    }, 50);
 
-    // Cleanup function to clear timers when the component unmounts or the key changes
     return () => {
       clearInterval(typingInterval);
       clearTimeout(repeatTimeout);
     };
   }, [key, fullFooterText]);
 
+  const handleRestart = () => {
+    setKey((prev) => prev + 1);
+  };
+
   return (
-    <footer className="relative border-t font-code overflow-hidden">
-        <div className="absolute inset-0 -z-10 opacity-15">
-            <Footer3DArt />
-        </div>
+    <footer className="border-t font-code overflow-hidden">
       <div className="container py-8">
-        <div className="relative z-10 flex flex-col items-center gap-8 text-center">
-            {/* Using <pre> to preserve whitespace and newlines, and a min-height to prevent layout shift */}
-            <div className="text-left text-sm text-muted-foreground min-h-[80px]">
-              <pre className="whitespace-pre-wrap">
-                {text}
-                {/* The blinking cursor */}
-                <span className="ml-1 w-2 h-3 bg-primary animate-blink inline-block" />
-              </pre>
-            </div>
+        <div className="flex flex-col items-center gap-8 text-center">
+          <div className="text-left text-sm text-muted-foreground min-h-[80px]">
+            <pre className="whitespace-pre-wrap cursor-pointer" onClick={handleRestart}>
+              {text}
+              {isComplete && (
+                <span
+                  aria-hidden="true"
+                  className="ml-1 w-2 h-3 bg-primary animate-blink inline-block"
+                />
+              )}
+            </pre>
+          </div>
         </div>
       </div>
     </footer>

@@ -1,91 +1,99 @@
 'use client';
 
-import React, { useRef, useMemo, useState, useEffect } from 'react';
+import React, { useRef, useMemo, useState, useEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Box, Octahedron } from '@react-three/drei';
 import * as THREE from 'three';
 
-const WireframeShape = ({ position, rotationSpeed, shapeType }: { position: [number, number, number], rotationSpeed: { x: number, y: number }, shapeType: 'box' | 'octahedron' }) => {
-    const ref = useRef<THREE.Mesh>(null!);
-    const [primaryColor, setPrimaryColor] = useState('hsl(288 83% 54%)'); // Default fallback
+// Type definition for shape props
+type ShapeType = 'box' | 'octahedron';
 
-    useEffect(() => {
-        // This effect runs on the client after mount, ensuring document is available.
-        const computedColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-        if (computedColor) {
-            setPrimaryColor(`hsl(${computedColor})`);
-        }
-    }, []);
+interface ShapeProps {
+  position: [number, number, number];
+  rotationSpeed: { x: number; y: number };
+  shapeType: ShapeType;
+}
 
-    useFrame(() => {
-        if (ref.current) {
-            ref.current.rotation.x += rotationSpeed.x;
-            ref.current.rotation.y += rotationSpeed.y;
-        }
-    });
+const WireframeShape = ({ position, rotationSpeed, shapeType }: ShapeProps) => {
+  const ref = useRef<THREE.Mesh>(null!);
+  const [primaryColor, setPrimaryColor] = useState<string>('hsl(288 83% 54%)');
 
-    const material = <meshBasicMaterial color={primaryColor} wireframe />;
-
-    if (shapeType === 'box') {
-        return (
-            <Box ref={ref} position={position} args={[0.3, 0.3, 0.3]}>
-                {material}
-            </Box>
-        );
+  useEffect(() => {
+    const computedColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--primary')
+      .trim();
+    if (computedColor) {
+      setPrimaryColor(`hsl(${computedColor})`);
     }
-    
-    return (
-        <Octahedron ref={ref} position={position} args={[0.3]}>
-            {material}
-        </Octahedron>
-    );
+  }, []);
+
+  useFrame(() => {
+    if (ref.current) {
+      ref.current.rotation.x += rotationSpeed.x;
+      ref.current.rotation.y += rotationSpeed.y;
+    }
+  });
+
+  const material = <meshBasicMaterial color={primaryColor} wireframe />;
+
+  return shapeType === 'box' ? (
+    <Box ref={ref} position={position} args={[0.3, 0.3, 0.3]}>
+      {material}
+    </Box>
+  ) : (
+    <Octahedron ref={ref} position={position} args={[0.3]}>
+      {material}
+    </Octahedron>
+  );
 };
 
 const Scene = () => {
-    const shapes = useMemo(() => {
-        const numShapes = 25;
-        const volumeSize = 25;
-        const shapeData = [];
+  const shapes = useMemo<ShapeProps[]>(() => {
+    const numShapes = 25;
+    const volumeSize = 25;
 
-        for (let i = 0; i < numShapes; i++) {
-            shapeData.push({
-                position: [
-                    (Math.random() - 0.5) * volumeSize,
-                    (Math.random() - 0.5) * (volumeSize / 4),
-                    (Math.random() - 0.5) * 5 - 3, // Keep them in a relatively narrow z-band
-                ] as [number, number, number],
-                rotationSpeed: {
-                    x: (Math.random() - 0.5) * 0.005,
-                    y: (Math.random() - 0.5) * 0.005,
-                },
-                shapeType: Math.random() > 0.5 ? 'box' : 'octahedron' as 'box' | 'octahedron',
-            });
-        }
-        return shapeData;
-    }, []);
+    const shapeData: ShapeProps[] = [];
+    for (let i = 0; i < numShapes; i++) {
+      shapeData.push({
+        position: [
+          (Math.random() - 0.5) * volumeSize,
+          (Math.random() - 0.5) * (volumeSize / 4),
+          (Math.random() - 0.5) * 5 - 3,
+        ],
+        rotationSpeed: {
+          x: (Math.random() - 0.5) * 0.005,
+          y: (Math.random() - 0.5) * 0.005,
+        },
+        shapeType: (Math.random() > 0.5 ? 'box' : 'octahedron') as ShapeType,
+      });
+    }
+    return shapeData;
+  }, []);
 
-    const groupRef = useRef<THREE.Group>(null!);
-     useFrame((state) => {
-        if (groupRef.current) {
-            groupRef.current.position.x = Math.sin(state.clock.getElapsedTime() * 0.1) * 2;
-        }
-    });
+  const groupRef = useRef<THREE.Group>(null!);
 
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.position.x = Math.sin(state.clock.getElapsedTime() * 0.1) * 2;
+    }
+  });
 
-    return (
-        <group ref={groupRef}>
-            {shapes.map((shape, i) => (
-                <WireframeShape key={i} {...shape} />
-            ))}
-        </group>
-    );
+  return (
+    <group ref={groupRef}>
+      {shapes.map((shape, i) => (
+        <WireframeShape key={i} {...shape} />
+      ))}
+    </group>
+  );
 };
-
 
 export default function Footer3DArt() {
   return (
-    <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
-      <Scene />
+    <Canvas camera={{ position: [0, 0, 10], fov: 50 }} gl={{ antialias: true }} dpr={[1, 2]}>
+      <fog attach="fog" args={['#000000', 8, 20]} />
+      <Suspense fallback={null}>
+        <Scene />
+      </Suspense>
     </Canvas>
   );
 }
