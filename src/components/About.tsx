@@ -9,7 +9,7 @@ const AtomicModel = dynamic(() => import('@/components/AtomicModel'), {
 export default function About() {
   return (
     <section id="about" className="relative w-full py-12 md:py-24 lg:py-32 bg-secondary overflow-hidden">
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/3 w-[600px] h-[600px] opacity-15 lg:opacity-20 pointer-events-none">
+      <div className="absolute inset-0 opacity-10 lg:opacity-15 pointer-events-none">
         <AtomicModel />
       </div>
       <div className="container relative z-10">
