@@ -4,12 +4,16 @@ import Projects from '@/components/Projects';
 import About from '@/components/About';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
+import dynamic from 'next/dynamic';
+
+const BackgroundArt = dynamic(() => import('@/components/BackgroundArt'), { ssr: false });
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 relative overflow-x-clip">
+        <BackgroundArt />
         <Hero />
         <Projects
             className="py-12 md:py-24 lg:py-32" 
