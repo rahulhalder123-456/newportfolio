@@ -47,7 +47,7 @@ export default function Footer() {
   }, [key, fullFooterText]);
 
   return (
-    <footer className="border-t bg-background font-code">
+    <footer className="border-t font-code terminal-grid-bg">
       <div className="container py-12">
         <div className="flex flex-col items-center gap-8 text-center">
             {/* Using <pre> to preserve whitespace and newlines, and a min-height to prevent layout shift */}
