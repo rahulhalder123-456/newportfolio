@@ -59,7 +59,7 @@ export default function Footer() {
       <div className="container py-8">
         <div className="relative z-10 flex flex-col items-center gap-8 text-center">
             {/* Using <pre> to preserve whitespace and newlines, and a min-height to prevent layout shift */}
-            <div className="text-left text-sm text-muted-foreground min-h-[100px]">
+            <div className="text-left text-sm text-muted-foreground min-h-[80px]">
               <pre className="whitespace-pre-wrap">
                 {text}
                 {/* The blinking cursor */}
