@@ -19,18 +19,18 @@ export async function sendEmail(input: SendEmailInput) {
 
   if (!validatedFields.success) {
     return {
-      error: 'Invalid form data.',
+      error: 'Invalid form data. Please check your inputs.',
     };
   }
   
   if (!toEmail) {
       console.error("EMAIL_RECIPIENT environment variable not set.");
-      return { error: 'Server configuration error: Missing recipient email.' };
+      return { error: 'Server configuration error: Missing recipient email. Please contact the site administrator.' };
   }
 
   if (!resendApiKey || resendApiKey === 'REPLACE_WITH_YOUR_RESEND_API_KEY') {
     console.error('RESEND_API_KEY environment variable is not set or is a placeholder.');
-    return { error: 'Server configuration error: Missing API Key.' };
+    return { error: 'Server configuration error: Email service is not configured. Please contact the site administrator.' };
   }
 
   const resend = new Resend(resendApiKey);
@@ -49,16 +49,19 @@ export async function sendEmail(input: SendEmailInput) {
              <p>${message}</p>`,
     });
 
+    // This block handles errors returned by the Resend API
     if (error) {
-        console.error("Resend API Error:", error);
-        return { error: error.message };
+        console.error("Resend API returned an error:", error);
+        return { error: `API Error: ${error.message}` };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error("Unexpected error in sendEmail:", error);
+  } catch (exception) {
+    // This block handles exceptions thrown by the SDK (e.g., network issues)
+    console.error("Caught exception in sendEmail:", exception);
+    const errorMessage = exception instanceof Error ? exception.message : 'An unknown exception occurred.';
     return {
-      error: 'An unexpected error occurred while trying to send the email.',
+      error: `An unexpected error occurred: ${errorMessage}`,
     };
   }
 }
