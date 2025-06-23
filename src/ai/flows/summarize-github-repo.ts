@@ -46,18 +46,24 @@ const getReadmeContent = ai.defineTool({
     const repo = pathParts[1].replace(/\.git$/, '');
 
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
-    const response = await fetch(apiUrl, {
-      headers: {
-        'Accept': 'application/vnd.github.v3.raw',
-        'User-Agent': 'Firebase-Studio-Agent'
-      }
-    });
+    
+    const headers: HeadersInit = {
+      'Accept': 'application/vnd.github.v3.raw',
+      'User-Agent': 'Firebase-Studio-Agent'
+    };
+
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const response = await fetch(apiUrl, { headers });
 
     if (!response.ok) {
         if (response.status === 404) {
-            return `I was unable to retrieve the readme content from the provided URL. The repository may be private, or it might not have a README file.`;
+            return `[ERROR: NOT_FOUND] Failed to fetch README content. The repository may be private, or it might not have a README file.`;
         }
-        return `Failed to fetch README from GitHub API: ${response.status} ${response.statusText}. Please check if the repository is public and the URL is correct.`;
+        console.error(`GitHub API Error: ${response.status} ${response.statusText}`);
+        return `[ERROR: API_ERROR] Failed to fetch README content. Please check the repository URL. If the repository is private, please provide a GitHub token.`;
     }
 
     const content = await response.text();
@@ -67,7 +73,7 @@ const getReadmeContent = ai.defineTool({
     return content;
   } catch (error: any) {
     console.error('Error fetching README:', error);
-    return `An unexpected error occurred while trying to fetch the README: ${error.message}`;
+    return `[ERROR: UNEXPECTED] An unexpected error occurred: ${error.message}`;
   }
 });
 
@@ -79,9 +85,10 @@ const summarizeRepoPrompt = ai.definePrompt({
   prompt: `You are a seasoned software developer and technical writer. Your task is to analyze a GitHub repository and generate a creative title and a concise summary.
 
 1.  Use the getReadmeContent tool to fetch the content of the README file for the given repoUrl.
-2.  Based on the README content, create a short, catchy title for the project. If the README is uninformative or unavailable, create a title based on the repository URL (e.g., 'owner/repo').
-3.  Write a clear and concise summary that explains what the project is about.
-4.  If you cannot retrieve the README content, the tool will return a message explaining why. Use this message as the summary.
+2.  Analyze the result from the tool.
+    - If the result starts with '[ERROR:', it means fetching the README failed. Use the text *after* the error code (e.g., after '[ERROR: ...]') as the summary. For the title, use the repository name from the URL (e.g., 'owner/repo').
+    - If the result is the README content, create a short, catchy title for the project and write a clear and concise summary that explains what the project is about.
+    - If the README content is empty or uninformative, create a title from the URL and state that the README was empty.
 
 Repo URL: {{{repoUrl}}}
 `,
