@@ -1,6 +1,12 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+
+const Footer3DArt = dynamic(() => import('@/components/Footer3DArt'), { 
+    ssr: false,
+});
 
 export default function Footer() {
   const currentYear = useMemo(() => new Date().getFullYear(), []);
@@ -47,9 +53,12 @@ export default function Footer() {
   }, [key, fullFooterText]);
 
   return (
-    <footer className="border-t font-code terminal-grid-bg">
+    <footer className="relative border-t font-code overflow-hidden">
+        <div className="absolute inset-0 -z-10 opacity-15">
+            <Footer3DArt />
+        </div>
       <div className="container py-12">
-        <div className="flex flex-col items-center gap-8 text-center">
+        <div className="relative z-10 flex flex-col items-center gap-8 text-center">
             {/* Using <pre> to preserve whitespace and newlines, and a min-height to prevent layout shift */}
             <div className="text-left text-sm text-muted-foreground min-h-[120px]">
               <pre className="whitespace-pre-wrap">
