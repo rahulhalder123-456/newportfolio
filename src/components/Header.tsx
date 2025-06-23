@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { CodeXml, Github, Linkedin, Twitter } from 'lucide-react';
+import { CodeXml } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
@@ -24,17 +24,6 @@ export default function Header() {
             <Link href={projectsHref} className="text-muted-foreground transition-colors hover:text-primary">Projects</Link>
             <Link href={contactHref} className="text-muted-foreground transition-colors hover:text-primary">Contact</Link>
         </nav>
-        <div className="flex items-center space-x-4 ml-6">
-            <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Github Profile" className="text-muted-foreground hover:text-primary transition-colors">
-              <Github className="h-5 w-5" />
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="text-muted-foreground hover:text-primary transition-colors">
-              <Linkedin className="h-5 w-5" />
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Twitter Profile" className="text-muted-foreground hover:text-primary transition-colors">
-              <Twitter className="h-5 w-5" />
-            </a>
-        </div>
       </div>
     </header>
   );
