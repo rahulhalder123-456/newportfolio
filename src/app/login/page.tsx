@@ -61,7 +61,7 @@ export default function LoginPage() {
       <Header />
       <main className="flex-1 flex items-center justify-center">
         <section className="w-full">
-          <div className="container px-4 md:px-6">
+          <div className="container">
             <div className="mx-auto max-w-sm">
               <Card>
                   <CardHeader className="text-center">

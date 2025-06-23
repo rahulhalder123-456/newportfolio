@@ -86,7 +86,7 @@ export default function AdminPage() {
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
         <main className="flex-1 flex items-center justify-center">
-            <div className="container px-4 md:px-6">
+            <div className="container">
                 <div className="mx-auto max-w-2xl">
                     <Card>
                         <CardHeader>
@@ -122,7 +122,7 @@ export default function AdminPage() {
       <Header />
       <main className="flex-1 flex items-center justify-center">
         <section id="add-project" className="w-full">
-          <div className="container px-4 md:px-6">
+          <div className="container">
             <div className="mx-auto max-w-2xl">
               <Card>
                   <CardHeader>

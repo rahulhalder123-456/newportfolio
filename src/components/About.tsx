@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function About() {
   return (
     <section id="about" className="w-full py-12 md:py-24 lg:py-32 bg-secondary">
-      <div className="container px-4 md:px-6">
+      <div className="container">
         <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
           <Image
             src="https://placehold.co/600x600.png"
