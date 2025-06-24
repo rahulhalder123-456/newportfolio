@@ -12,6 +12,7 @@ type Project = {
   url: string;
   title: string;
   summary: string;
+  imageUrl: string;
 };
 
 type ProjectsProps = {

@@ -1,7 +1,7 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,19 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, FileCode, Link as LinkIcon, Loader2, Sparkles } from "lucide-react";
+import { PlusCircle, FileCode, Link as LinkIcon, Loader2, Sparkles, Image as ImageIcon } from "lucide-react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { summarizeProject } from "@/ai/flows/summarize-project-flow";
+import { generateProjectImage } from "@/ai/flows/summarize-project-flow";
 import { getErrorMessage } from "@/lib/utils";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
+  imageUrl: z.string().url("Please generate an image.").min(1, "Please generate an image."),
 });
 
 type Project = {
@@ -30,6 +31,7 @@ type Project = {
   url: string;
   title: string;
   summary: string;
+  imageUrl: string;
 };
 
 export default function AdminPage() {
@@ -37,6 +39,7 @@ export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem("isAuthenticated");
@@ -53,15 +56,24 @@ export default function AdminPage() {
       title: "",
       summary: "",
       url: "",
+      imageUrl: "",
     },
   });
 
-  async function handleGenerateSummary() {
-    const url = form.getValues("url");
-    if (!url || !z.string().url().safeParse(url).success) {
+  const imageUrlValue = form.watch("imageUrl");
+  useEffect(() => {
+    setGeneratedImageUrl(imageUrlValue);
+  }, [imageUrlValue]);
+
+
+  async function handleGenerateImage() {
+    const title = form.getValues("title");
+    const summary = form.getValues("summary");
+
+    if (!title || !summary) {
         toast({
-            title: "Invalid URL",
-            description: "Please enter a valid GitHub repository URL first.",
+            title: "Missing Information",
+            description: "Please enter a project title and summary first.",
             variant: "destructive",
         });
         return;
@@ -69,17 +81,18 @@ export default function AdminPage() {
 
     setIsGenerating(true);
     try {
-        const result = await summarizeProject({ githubUrl: url });
-        if (result && result.summary) {
-            form.setValue("summary", result.summary, { shouldValidate: true });
+        const result = await generateProjectImage({ title, summary });
+        if (result && result.imageUrl) {
+            form.setValue("imageUrl", result.imageUrl, { shouldValidate: true });
+            setGeneratedImageUrl(result.imageUrl);
             toast({
-                title: "Summary Generated!",
-                description: "The AI-powered summary has been populated.",
+                title: "Image Generated!",
+                description: "The AI-powered image has been created.",
             });
         } else {
             toast({
                 title: "Error",
-                description: "Could not generate summary. Check if the repo is public and has a README.",
+                description: "Could not generate image. Please try again.",
                 variant: "destructive",
             });
         }
@@ -108,6 +121,7 @@ export default function AdminPage() {
         localStorage.setItem("projects", JSON.stringify(updatedProjects));
         
         form.reset();
+        setGeneratedImageUrl(null);
 
         toast({
             title: "Project Added!",
@@ -142,7 +156,7 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
-      <main className="flex-1 flex items-center justify-center">
+      <main className="flex-1 py-12">
         <section id="add-project" className="w-full">
           <div className="container">
             <div className="mx-auto max-w-2xl">
@@ -153,66 +167,47 @@ export default function AdminPage() {
                   </CardHeader>
                   <CardContent>
                       <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                          control={form.control}
-                          name="title"
-                          render={({ field }) => (
-                              <FormItem className="md:col-span-1">
-                                  <FormLabel>Project Title</FormLabel>
-                                  <div className="relative">
-                                      <FileCode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                      <FormControl>
-                                          <Input placeholder="My Awesome Project" {...field} className="pl-10" />
-                                      </FormControl>
-                                  </div>
-                                  <FormMessage />
-                              </FormItem>
-                          )}
-                          />
-                          <FormField
-                          control={form.control}
-                          name="url"
-                          render={({ field }) => (
-                              <FormItem className="md:col-span-1">
-                                  <FormLabel>Project URL</FormLabel>
-                                  <div className="relative">
-                                      <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                      <FormControl>
-                                          <Input placeholder="https://github.com/user/repo" {...field} className="pl-10" />
-                                      </FormControl>
-                                  </div>
-                                  <FormMessage />
-                              </FormItem>
-                          )}
-                          />
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                            control={form.control}
+                            name="title"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Project Title</FormLabel>
+                                    <div className="relative">
+                                        <FileCode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <FormControl>
+                                            <Input placeholder="My Awesome Project" {...field} className="pl-10" />
+                                        </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <FormField
+                            control={form.control}
+                            name="url"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Project URL</FormLabel>
+                                    <div className="relative">
+                                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <FormControl>
+                                            <Input placeholder="https://github.com/user/repo" {...field} className="pl-10" />
+                                        </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                          </div>
                           <FormField
                           control={form.control}
                           name="summary"
                           render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                                <div className="flex items-center justify-between">
-                                  <FormLabel>Summary</FormLabel>
-                                  <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={handleGenerateSummary}
-                                      disabled={isGenerating || form.formState.isSubmitting}
-                                  >
-                                      {isGenerating ? (
-                                          <>
-                                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                              Generating...
-                                          </>
-                                      ) : (
-                                          <>
-                                              <Sparkles className="mr-2 h-4 w-4" />
-                                              Generate with AI
-                                          </>
-                                      )}
-                                  </Button>
-                                </div>
+                            <FormItem>
+                                <FormLabel>Summary</FormLabel>
                                 <FormControl>
                                 <Textarea placeholder="A short description of the project..." {...field} />
                                 </FormControl>
@@ -220,7 +215,68 @@ export default function AdminPage() {
                             </FormItem>
                           )}
                           />
-                          <Button type="submit" className="w-full md:col-span-2" disabled={isGenerating}>
+                          <Card className="bg-secondary/50">
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center justify-between">
+                                  Project Image
+                                </CardTitle>
+                                <CardDescription>
+                                  Generate a unique image for your project using AI.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex flex-col items-center gap-4">
+                               <div className="w-full aspect-video rounded-md bg-background/50 border border-dashed flex items-center justify-center">
+                                {isGenerating ? (
+                                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                        <Loader2 className="h-8 w-8 animate-spin" />
+                                        <span>Generating...</span>
+                                    </div>
+                                ) : generatedImageUrl ? (
+                                    <Image src={generatedImageUrl} alt="Generated project preview" width={600} height={400} className="rounded-md object-cover w-full h-full" />
+                                ) : (
+                                    <div className="text-center text-muted-foreground p-4">
+                                        <ImageIcon className="mx-auto h-12 w-12" />
+                                        <p className="mt-2 text-sm">Your generated image will appear here.</p>
+                                    </div>
+                                )}
+                               </div>
+                               <FormField
+                                control={form.control}
+                                name="imageUrl"
+                                render={({ field }) => (
+                                    <FormItem className="w-full hidden">
+                                        <FormControl>
+                                            <Input {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                            </CardContent>
+                            <CardFooter>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={handleGenerateImage}
+                                    disabled={isGenerating || form.formState.isSubmitting}
+                                >
+                                    {isGenerating ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="mr-2 h-4 w-4" />
+                                            Generate Image with AI
+                                        </>
+                                    )}
+                                </Button>
+                            </CardFooter>
+                          </Card>
+                          
+                          <Button type="submit" className="w-full" disabled={isGenerating}>
                               <PlusCircle className="mr-2 h-4 w-4" />
                               Add Project
                           </Button>
