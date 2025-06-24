@@ -50,7 +50,7 @@ export default function About() {
         <motion.div 
           className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center"
           initial="hidden"
-          animate="visible"
+          whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
@@ -58,13 +58,39 @@ export default function About() {
             className="flex justify-center order-first md:order-last"
             variants={itemVariants}
           >
-            <Image
-              src="/profile.png"
-              alt="Rahul Halder"
-              width={400}
-              height={400}
-              className="rounded-full object-cover border-4 border-primary/50 shadow-lg"
-            />
+            <div className="relative w-[300px] h-[300px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px]">
+              <svg className="absolute w-0 h-0">
+                <defs>
+                  <clipPath id="blob" clipPathUnits="userSpaceOnUse">
+                    <path d="M403,283.5Q394,367,319.5,404.5Q245,442,175,402.5Q105,363,78,294Q51,225,103.5,163.5Q156,102,240.5,84.5Q325,67,362.5,157.5Q400,248,403,283.5Z" />
+                  </clipPath>
+                </defs>
+              </svg>
+              <div
+                className="w-full h-full"
+                style={{ clipPath: "url(#blob)" }}
+              >
+                <Image
+                  src="https://placehold.co/400x400.png"
+                  data-ai-hint="man hoodie"
+                  alt="Rahul Halder"
+                  width={400}
+                  height={400}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <svg
+                viewBox="0 0 450 450"
+                className="absolute top-0 left-0 w-full h-full pointer-events-none"
+              >
+                <path
+                  d="M403,283.5Q394,367,319.5,404.5Q245,442,175,402.5Q105,363,78,294Q51,225,103.5,163.5Q156,102,240.5,84.5Q325,67,362.5,157.5Q400,248,403,283.5Z"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="6"
+                  fill="none"
+                />
+              </svg>
+            </div>
           </motion.div>
           <motion.div 
             className="flex flex-col justify-center space-y-4"
