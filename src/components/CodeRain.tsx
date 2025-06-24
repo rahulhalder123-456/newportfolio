@@ -9,7 +9,7 @@ import * as THREE from 'three';
 function Droplet() {
     const ref = useRef<any>(null!);
     const speed = useMemo(() => Math.random() * 0.2 + 0.1, []);
-    const initialY = useMemo(() => (Math.random() - 0.5) * 20, []);
+    const initialY = useMemo(() => 10 + Math.random() * 10, []);
 
     const resetPosition = () => {
         if (ref.current) {
