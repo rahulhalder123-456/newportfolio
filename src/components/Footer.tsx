@@ -50,7 +50,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="border-t font-code overflow-hidden">
+    <footer className="border-t font-code overflow-hidden min-h-[140px] flex items-center">
       <div className="container py-8">
         <div className="flex flex-col items-center gap-8 text-center">
           <div className="text-left text-sm text-muted-foreground min-h-[80px]">
