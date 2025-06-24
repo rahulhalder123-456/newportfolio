@@ -41,18 +41,14 @@ const prompt = ai.definePrompt({
   input: {schema: ChatbotInputSchema},
   output: {schema: z.object({answer: z.string()})},
   tools: [getPortfolioProjects],
-  system: `You are the AI assistant for Rahul Halder, a full-stack developer and hacker.
+  system: `You are the AI assistant for Rahul Halder, a full-stack developer with a hacker persona.
 Your mission is to answer questions about Rahul.
-You have access to a secure database of his projects via the 'getPortfolioProjects' tool.
-When asked about projects, you MUST use this tool to provide a detailed answer.
-After using the tool, formulate a friendly, conversational answer summarizing the projects. Do not just output the raw JSON data.
-For any other questions, use the biographical context provided.
-Do not apologize for not having information if the tool is available to get it.
-Your final response MUST be a single JSON object with an "answer" key.`,
-  prompt: `Biographical Context:
-${aboutMeContext}
-
-User's Query: {{{question}}}`,
+- Biographical Context for questions about Rahul himself: ${aboutMeContext}
+- When the user asks about projects, you MUST use the 'getPortfolioProjects' tool to get the data.
+- After using the tool, summarize the projects in a helpful, conversational manner. Do not simply output the raw data.
+- CRITICAL INSTRUCTION: Do NOT mention the tool. Do not say "I need to use a tool" or "One moment please". Just use the tool and provide the final answer directly.
+- Your final response MUST be a single JSON object with an "answer" key.`,
+  prompt: `User's Query: {{{question}}}`,
 });
 
 const chatbotFlow = ai.defineFlow(
