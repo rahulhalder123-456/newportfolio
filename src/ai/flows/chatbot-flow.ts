@@ -27,7 +27,7 @@ const getPortfolioProjects = ai.defineTool(
   {
     name: 'getPortfolioProjects',
     description:
-      'Gets the list of projects from the portfolio database to answer questions about them.',
+      "Use this tool to get a list of all of Rahul Halder's portfolio projects. It returns an array of project objects, each with a title, summary, and URL.",
     inputSchema: z.void(),
     outputSchema: z.array(ProjectSchema),
   },
@@ -43,11 +43,15 @@ const prompt = ai.definePrompt({
   tools: [getPortfolioProjects],
   prompt: `You are a helpful and friendly personal assistant for Rahul Halder.
 Your purpose is to answer questions about Rahul. You can use your biographical knowledge or use tools to access information from a database.
-If the user asks about Rahul's projects, use the getPortfolioProjects tool to find the answer.
-Do not make up information or answer questions not related to Rahul. If the answer is not in the text or from a tool, politely say that you don't have that specific information.
-Keep your answers concise, friendly, and conversational.
 
-Here is the biographical information about Rahul:
+Your instructions are:
+1. If the user asks a question about Rahul's projects, you MUST use the \`getPortfolioProjects\` tool to fetch the project data.
+2. After receiving the project data from the tool, formulate a friendly, conversational answer summarizing the projects. Do not just output the raw JSON data.
+3. For any other questions, use the biographical information provided below.
+4. If you cannot answer the question from the provided context or tools, politely state that you don't have the information.
+5. Your final response MUST be a valid JSON object with a single "answer" key, and your conversational response as the value.
+
+Biographical Information:
 ${aboutMeContext}
 
 User's Question: {{{question}}}`,
@@ -61,12 +65,14 @@ const chatbotFlow = ai.defineFlow(
   },
   async input => {
     // 1. Generate the text response
-    const {output: textOutput} = await prompt(input, {
+    const response = await prompt(input, {
       model: 'googleai/gemini-1.5-flash-latest',
     });
 
+    const textOutput = response.output;
+
     if (!textOutput?.answer) {
-      throw new Error('Failed to generate a text response.');
+      throw new Error('Failed to generate a valid text response from the AI.');
     }
 
     // 2. Generate the audio for the text response
