@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bot, Send, Loader2, User } from "lucide-react";
+import { Send, Loader2, TerminalSquare } from "lucide-react";
 import { askChatbot } from "@/ai/flows/chatbot-flow";
 import { getErrorMessage } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 
 type Message = {
   role: "user" | "assistant";
@@ -22,7 +21,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I'm Rahul's AI assistant. Ask me anything about him!",
+      content: "Authentication successful. Welcome, operator. I am the AI assistant for Rahul Halder. How can I help you?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -63,7 +62,7 @@ export default function Chatbot() {
         description: getErrorMessage(error),
         variant: "destructive",
       });
-       const errorMessage: Message = { role: "assistant", content: "Sorry, I ran into a problem. Please try again." };
+       const errorMessage: Message = { role: "assistant", content: "Connection error: Unable to access secure channel. Please try again." };
        setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -82,9 +81,9 @@ export default function Chatbot() {
           >
             <Button
               size="icon"
-              className="rounded-full w-14 h-14 shadow-lg bg-primary hover:bg-primary/90"
+              className="rounded-lg w-14 h-14 shadow-lg bg-accent hover:bg-accent/90 text-black"
             >
-              <Bot className="h-7 w-7" />
+              <TerminalSquare className="h-7 w-7" />
               <span className="sr-only">Open Chatbot</span>
             </Button>
           </motion.div>
@@ -92,12 +91,15 @@ export default function Chatbot() {
         <PopoverContent
           side="top"
           align="end"
-          className="w-[380px] h-[500px] flex flex-col p-0 mr-4 mb-2 rounded-2xl overflow-hidden"
+          className="w-[400px] h-[550px] flex flex-col p-0 mr-4 mb-2 rounded-lg overflow-hidden bg-black border-2 border-accent/30 font-code shadow-lg shadow-accent/20"
           sideOffset={10}
         >
-          <header className="p-4 bg-secondary border-b">
-            <h3 className="font-bold text-lg">AI Assistant</h3>
-            <p className="text-sm text-muted-foreground">Ask me about Rahul</p>
+          <header className="p-3 bg-accent/10 border-b border-accent/30 flex items-center gap-2">
+            <span className="text-accent">{'>'}</span>
+            <div>
+              <h3 className="font-bold text-lg text-foreground">AI Assistant</h3>
+              <p className="text-sm text-accent/80">session --user "operator"</p>
+            </div>
           </header>
           
           <ScrollArea className="flex-1" ref={scrollAreaRef}>
@@ -109,65 +111,47 @@ export default function Chatbot() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className={cn(
-                      "flex items-start gap-3",
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    )}
+                    className="text-sm"
                   >
-                    {message.role === "assistant" && (
-                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                          <Bot size={18} />
-                       </div>
-                    )}
-                    <div
-                      className={cn(
-                        "p-3 rounded-lg max-w-[80%] text-sm",
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary"
-                      )}
-                    >
-                      {message.content}
-                    </div>
-                     {message.role === "user" && (
-                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center">
-                          <User size={18} />
-                       </div>
+                    {message.role === 'assistant' ? (
+                        <div className="flex gap-2">
+                            <span className="text-accent font-bold">[AI]:</span>
+                            <p className="flex-1 whitespace-pre-wrap text-foreground/90">{message.content}</p>
+                        </div>
+                    ) : (
+                        <div className="flex gap-2">
+                            <span className="text-primary font-bold">[USER]:</span>
+                            <p className="flex-1 whitespace-pre-wrap text-foreground/90">{message.content}</p>
+                        </div>
                     )}
                   </motion.div>
                 ))}
               </AnimatePresence>
               {isLoading && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex items-center gap-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex gap-2 items-center text-sm"
                   >
-                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                        <Bot size={18} />
-                     </div>
-                     <div className="p-3 rounded-lg bg-secondary flex items-center space-x-1">
-                        <motion.div animate={{ y: [0, -3, 0] }} transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-muted-foreground rounded-full" />
-                        <motion.div animate={{ y: [0, -3, 0] }} transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.1 }} className="w-1.5 h-1.5 bg-muted-foreground rounded-full" />
-                        <motion.div animate={{ y: [0, -3, 0] }} transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.2 }} className="w-1.5 h-1.5 bg-muted-foreground rounded-full" />
-                     </div>
+                    <span className="text-accent font-bold">[AI]:</span>
+                    <span className="h-4 w-2 bg-accent animate-blink" />
                   </motion.div>
               )}
             </div>
           </ScrollArea>
           
-          <div className="p-4 border-t bg-secondary">
+          <div className="p-3 border-t border-accent/30 bg-black/50">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
+              <span className="text-primary font-bold">{'>'}</span>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1"
+                placeholder="Type your command..."
+                className="flex-1 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto text-sm font-code"
                 disabled={isLoading}
                 autoComplete="off"
               />
-              <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+              <Button type="submit" size="icon" variant="ghost" className="h-7 w-7 text-accent hover:bg-accent/20 hover:text-accent" disabled={isLoading || !input.trim()}>
                 {isLoading ? <Loader2 className="animate-spin" /> : <Send />}
                 <span className="sr-only">Send message</span>
               </Button>
