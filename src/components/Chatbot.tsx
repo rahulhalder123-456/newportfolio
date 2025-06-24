@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Send, Loader2, TerminalSquare } from "lucide-react";
+import { Send, Loader2, Terminal } from "lucide-react";
 import { askChatbot } from "@/ai/flows/chatbot-flow";
 import { getErrorMessage } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -81,9 +82,9 @@ export default function Chatbot() {
           >
             <Button
               size="icon"
-              className="rounded-lg w-14 h-14 shadow-lg bg-accent hover:bg-accent/90 text-black"
+              className="rounded-full w-14 h-14 shadow-lg bg-accent hover:bg-accent/90 text-black"
             >
-              <TerminalSquare className="h-7 w-7" />
+              <Terminal className="h-7 w-7" />
               <span className="sr-only">Open Chatbot</span>
             </Button>
           </motion.div>
