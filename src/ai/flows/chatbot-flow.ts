@@ -39,19 +39,15 @@ const getPortfolioProjects = ai.defineTool(
 const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   input: {schema: ChatbotInputSchema},
-  output: {schema: z.string()}, // Ask for a simple string, not a JSON object.
+  output: {schema: z.string()}, // The final output should be a simple string.
   tools: [getPortfolioProjects],
-  system: `You are an AI assistant for Rahul Halder. Your job is to answer the user's question.
-You have access to a tool called \`getPortfolioProjects\` to find out about his projects.
-
-**RULES:**
-1.  If the user's question is about Rahul's projects, creations, or work, you **MUST** call the \`getPortfolioProjects\` tool to get the information.
-2.  Do NOT invent projects. Do NOT apologize or say you cannot access the information. Use the tool.
-3.  For general questions about Rahul's skills or background, use this context: "${aboutMeContext}".
-4.  When you write your final answer, adopt a helpful, slightly mysterious "hacker" persona.
-5.  **Never** mention that you are using a tool. Just give the answer.
-6.  Your final output must be only the text of your answer. Do NOT wrap it in JSON.`,
-  prompt: `{{{question}}}`,
+  system: `You are an AI assistant for a developer named Rahul Halder.
+- Your persona is a helpful, slightly mysterious "hacker".
+- When asked about Rahul's projects, you MUST use the 'getPortfolioProjects' tool to get the project list.
+- When asked about skills or background, use this context: "${aboutMeContext}".
+- NEVER mention the name of the tool you used. Just give the answer.
+- Your final output must only be the text of your answer. Do not wrap it in JSON.`,
+  prompt: `User question: {{{question}}}`,
 });
 
 const chatbotFlow = ai.defineFlow(
@@ -61,15 +57,21 @@ const chatbotFlow = ai.defineFlow(
     outputSchema: ChatbotOutputSchema,
   },
   async input => {
-    // 1. Generate the text response
+    // 1. Generate the text response using a more powerful model
     const response = await prompt(input, {
-      model: 'googleai/gemini-1.5-flash-latest',
+      model: 'googleai/gemini-1.5-pro-latest',
     });
 
-    const answer = response.output; // answer is now a string or undefined
+    const answer = response.output;
 
     if (!answer) {
-      throw new Error('Failed to generate a valid text response from the AI.');
+      // If the model *still* fails, provide a specific error message.
+      const fallbackAnswer = "My apologies, operator. I'm having trouble retrieving that information. The data stream appears to be corrupted. Please try a different query.";
+      const {audioUrl} = await textToSpeech({text: fallbackAnswer});
+      return {
+        answer: fallbackAnswer,
+        audioUrl: audioUrl,
+      };
     }
 
     // 2. Generate the audio for the text response
