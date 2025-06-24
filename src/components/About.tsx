@@ -42,8 +42,8 @@ export default function About() {
 
 
   return (
-    <section id="about" className="relative w-full py-12 md:py-24 lg:py-32 bg-secondary flex items-start md:items-center">
-      <div className="absolute inset-0 opacity-10 lg:opacity-15 pointer-events-none">
+    <section id="about" className="relative w-full py-12 md:py-24 lg:py-32 bg-background flex items-start md:items-center overflow-y-auto no-scrollbar">
+      <div className="absolute inset-0 opacity-5 lg:opacity-10 pointer-events-none">
         <AtomicModel />
       </div>
       <div className="container relative z-10">
@@ -58,16 +58,19 @@ export default function About() {
             className="flex justify-center order-first md:order-last"
             variants={itemVariants}
           >
-            <div className="relative w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] md:w-[450px] md:h-[450px] rounded-full border-4 border-primary/20 shadow-2xl shadow-primary/20 overflow-hidden">
-              <Image
-                src="/mine.png"
-                alt="Rahul Halder"
-                width={450}
-                height={450}
-                className="object-cover w-full h-full"
-                style={{ objectPosition: 'center', transform: 'scale(1.2)' }}
-                priority
-              />
+            <div className="group relative w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] md:w-[420px] md:h-[420px]">
+              <div className="absolute inset-0 rounded-full bg-primary opacity-20 blur-2xl transition-all duration-300 group-hover:opacity-30"></div>
+              <div className="relative w-full h-full rounded-full border-2 border-primary/50 overflow-hidden">
+                <Image
+                  src="/mine.png"
+                  alt="Rahul Halder"
+                  width={420}
+                  height={420}
+                  className="object-cover w-full h-full"
+                  style={{ objectPosition: 'center', transform: 'scale(1.2)' }}
+                  priority
+                />
+              </div>
             </div>
           </motion.div>
           <motion.div
