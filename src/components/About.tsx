@@ -72,7 +72,7 @@ export default function About() {
                 style={{ clipPath: "url(#blob)" }}
               >
                 <Image
-                  src="/profile.png"
+                  src="/mine.png"
                   alt="Rahul Halder"
                   width={400}
                   height={400}
