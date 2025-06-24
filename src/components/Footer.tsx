@@ -12,7 +12,7 @@ export default function Footer() {
     const year = new Date().getFullYear();
     setFullFooterText(`> Rahul Halder
 
-[navigation] ./about ./projects ./contact | [socials] open github open linkedin open twitter
+[navigation] ./about ./projects ./contact | [socials] open github open linkedin open talentflow
 
 © ${year} Rahul Halder. All Rights Reserved.`);
   }, []);

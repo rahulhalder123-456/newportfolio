@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { CodeXml, Github, Linkedin, Twitter } from 'lucide-react';
+import { CodeXml, Github, Linkedin, Briefcase } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export default function Header() {
@@ -33,8 +33,8 @@ export default function Header() {
           <a href="https://www.linkedin.com/in/rahul-halder-755756264/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="text-muted-foreground hover:text-primary transition-colors">
             <Linkedin className="h-5 w-5" />
           </a>
-          <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Twitter Profile" className="text-muted-foreground hover:text-primary transition-colors">
-            <Twitter className="h-5 w-5" />
+          <a href="https://talentflow-app.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="TalentFlow Platform" className="text-muted-foreground hover:text-primary transition-colors">
+            <Briefcase className="h-5 w-5" />
           </a>
         </div>
       </div>
