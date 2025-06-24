@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -29,7 +28,6 @@ export default function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     // Scroll to the bottom when messages change
@@ -52,15 +50,9 @@ export default function Chatbot() {
 
     try {
       const result = await askChatbot({ question: input });
-      if (result?.answer && result?.audioUrl) {
+      if (result?.answer) {
         const assistantMessage: Message = { role: "assistant", content: result.answer };
         setMessages((prev) => [...prev, assistantMessage]);
-
-        if (audioRef.current) {
-          audioRef.current.src = result.audioUrl;
-          audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
-        }
-
       } else {
         throw new Error("Received an incomplete response from the AI.");
       }
@@ -79,8 +71,6 @@ export default function Chatbot() {
 
   return (
     <>
-      <audio ref={audioRef} className="hidden" />
-
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <motion.div

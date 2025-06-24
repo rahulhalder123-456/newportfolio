@@ -14,7 +14,7 @@ import {
   type ChatbotOutput,
   ProjectSchema,
 } from './chatbot.schema';
-import {textToSpeech} from './tts-flow';
+// textToSpeech has been removed to reduce API calls and avoid quota issues.
 import {getProjects} from '@/app/projects/actions';
 
 export async function askChatbot(input: ChatbotInput): Promise<ChatbotOutput> {
@@ -67,20 +67,14 @@ const chatbotFlow = ai.defineFlow(
     if (!answer) {
       // If the model *still* fails, provide a specific error message.
       const fallbackAnswer = "My apologies, operator. I'm having trouble retrieving that information. The data stream appears to be corrupted. Please try a different query.";
-      const {audioUrl} = await textToSpeech({text: fallbackAnswer});
       return {
         answer: fallbackAnswer,
-        audioUrl: audioUrl,
       };
     }
 
-    // 2. Generate the audio for the text response
-    const {audioUrl} = await textToSpeech({text: answer});
-
-    // 3. Return both
+    // 2. Return the text answer
     return {
       answer: answer,
-      audioUrl: audioUrl,
     };
   }
 );
