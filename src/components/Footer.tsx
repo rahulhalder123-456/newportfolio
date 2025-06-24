@@ -29,7 +29,7 @@ export default function Footer() {
     let i = 0;
     typingInterval = setInterval(() => {
       if (i < fullFooterText.length) {
-        setText((prev) => prev + fullFooterText.charAt(i));
+        setText(fullFooterText.substring(0, i + 1));
         i++;
       } else {
         clearInterval(typingInterval);
@@ -51,8 +51,8 @@ export default function Footer() {
   };
 
   return (
-    <footer className="border-t font-code overflow-hidden min-h-[140px] flex items-center">
-      <div className="container py-8">
+    <footer className="border-t font-code overflow-hidden min-h-[120px] flex items-center">
+      <div className="container py-6">
         <div className="flex flex-col items-center gap-8 text-center">
           <div className="text-left text-sm text-muted-foreground min-h-[80px]">
             <pre className="whitespace-pre-wrap cursor-pointer" onClick={handleRestart}>
