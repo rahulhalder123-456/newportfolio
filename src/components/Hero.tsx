@@ -15,7 +15,7 @@ export default function Hero() {
       <div className="container relative z-10 text-center">
         <div className="mx-auto max-w-4xl">
           <h1 className="text-4xl md:text-7xl font-bold tracking-tighter mb-4 font-headline bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-text-gradient bg-300% ">
-            Jane Doe
+            Rahul Halder
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground">
             Hacker, Full-Stack Developer & AI Enthusiast.

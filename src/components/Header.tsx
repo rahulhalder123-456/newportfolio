@@ -18,7 +18,7 @@ export default function Header() {
       <div className="container flex h-14 items-center">
         <Link href="/" className="flex items-center space-x-2 mr-auto">
           <CodeXml className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg font-headline">Code Cipher</span>
+          <span className="font-bold text-lg font-headline">Rahul Halder</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link href={aboutHref} className="text-muted-foreground transition-colors hover:text-primary">About</Link>
@@ -27,10 +27,10 @@ export default function Header() {
         </nav>
         <div className="hidden md:flex items-center ml-6 space-x-4">
           <Separator orientation="vertical" className="h-6"/>
-          <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Github Profile" className="text-muted-foreground hover:text-primary transition-colors">
+          <a href="https://github.com/rahulhalder123-456" target="_blank" rel="noopener noreferrer" aria-label="Github Profile" className="text-muted-foreground hover:text-primary transition-colors">
             <Github className="h-5 w-5" />
           </a>
-          <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="text-muted-foreground hover:text-primary transition-colors">
+          <a href="https://www.linkedin.com/in/rahul-halder-755756264/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="text-muted-foreground hover:text-primary transition-colors">
             <Linkedin className="h-5 w-5" />
           </a>
           <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Twitter Profile" className="text-muted-foreground hover:text-primary transition-colors">

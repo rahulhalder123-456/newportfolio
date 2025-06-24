@@ -55,7 +55,7 @@ export async function sendEmail(input: SendEmailInput) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Code Cipher <onboarding@resend.dev>',
+      from: 'Rahul Halder <onboarding@resend.dev>',
       to: toEmail,
       subject: `New message from ${name} via portfolio`,
       reply_to: email,

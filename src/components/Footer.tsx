@@ -10,11 +10,11 @@ export default function Footer() {
 
   useEffect(() => {
     const year = new Date().getFullYear();
-    setFullFooterText(`> Code Cipher
+    setFullFooterText(`> Rahul Halder
 
 [navigation] ./about ./projects ./contact | [socials] open github open linkedin open twitter
 
-© ${year} Code Cipher. All Rights Reserved.`);
+© ${year} Rahul Halder. All Rights Reserved.`);
   }, []);
 
   useEffect(() => {

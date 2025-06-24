@@ -61,7 +61,7 @@ export default function About() {
           >
             <Image
               src="https://placehold.co/400x400.png"
-              alt="Jane Doe"
+              alt="Rahul Halder"
               width={400}
               height={400}
               className="rounded-full object-cover border-4 border-primary/50 shadow-lg"
