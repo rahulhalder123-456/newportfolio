@@ -79,6 +79,7 @@ export default function SectionDivider() {
   return (
     <div className="h-40 w-full relative pointer-events-none">
       <Canvas camera={{ position: [0, 0, 8], fov: 75 }}>
+        <fog attach="fog" args={['hsl(var(--background))', 10, 20]} />
         <ambientLight intensity={1.5} />
         <pointLight position={[10, 10, 10]} intensity={1} />
         <pointLight position={[-10, -10, -10]} intensity={0.5} color="hsl(var(--accent))" />
