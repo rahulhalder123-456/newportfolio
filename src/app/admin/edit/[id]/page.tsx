@@ -20,6 +20,7 @@ import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { generateProjectImage } from "@/ai/flows/summarize-project-flow";
 import { getErrorMessage } from "@/lib/utils";
+import { getProject, updateProject } from "@/app/projects/actions";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
@@ -27,14 +28,6 @@ const formSchema = z.object({
   url: z.string().url("Please enter a valid URL."),
   imageUrl: z.string().url("Please generate or provide an image.").min(1, "Please provide an image."),
 });
-
-type Project = {
-  id: string;
-  url: string;
-  title: string;
-  summary: string;
-  imageUrl: string;
-};
 
 export default function EditProjectPage() {
   const router = useRouter();
@@ -66,22 +59,23 @@ export default function EditProjectPage() {
     setIsAuthorized(true);
 
     if (projectId) {
+      const fetchProject = async () => {
         try {
-            const storedProjects = localStorage.getItem("projects");
-            const projects: Project[] = storedProjects ? JSON.parse(storedProjects) : [];
-            const projectToEdit = projects.find(p => p.id === projectId);
-            if (projectToEdit) {
-                form.reset(projectToEdit);
-                setGeneratedImageUrl(projectToEdit.imageUrl);
-            } else {
-                toast({ title: "Error", description: "Project not found.", variant: "destructive" });
-                router.replace("/admin");
-            }
+          const projectToEdit = await getProject(projectId);
+          if (projectToEdit) {
+              form.reset(projectToEdit);
+              setGeneratedImageUrl(projectToEdit.imageUrl);
+          } else {
+              toast({ title: "Error", description: "Project not found.", variant: "destructive" });
+              router.replace("/admin");
+          }
         } catch (error) {
             toast({ title: "Error", description: "Could not load project data.", variant: "destructive" });
         } finally {
             setIsLoading(false);
         }
+      };
+      fetchProject();
     }
   }, [router, projectId, form, toast]);
 
@@ -124,27 +118,14 @@ export default function EditProjectPage() {
     }
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const updatedProject: Project = {
-      id: projectId,
-      ...values,
-    };
-
-    try {
-        const storedProjects = localStorage.getItem("projects");
-        const projects: Project[] = storedProjects ? JSON.parse(storedProjects) : [];
-        const projectIndex = projects.findIndex(p => p.id === projectId);
-        
-        if (projectIndex > -1) {
-            projects[projectIndex] = updatedProject;
-            localStorage.setItem("projects", JSON.stringify(projects));
-            toast({ title: "Project Updated!", description: "Your changes have been saved." });
-            router.push("/admin");
-        } else {
-            toast({ title: "Error", description: "Could not find project to update.", variant: "destructive" });
-        }
-    } catch (error) {
-        toast({ title: "Error", description: "There was a problem saving your project.", variant: "destructive" });
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const result = await updateProject(projectId, values);
+    
+    if (result.success) {
+      toast({ title: "Project Updated!", description: "Your changes have been saved." });
+      router.push("/admin");
+    } else {
+      toast({ title: "Error", description: result.error || "Could not find project to update.", variant: "destructive" });
     }
   }
 
@@ -252,7 +233,7 @@ export default function EditProjectPage() {
                                         <span>Generating...</span>
                                     </div>
                                 ) : generatedImageUrl ? (
-                                    <Image src={generatedImageUrl} alt="Generated project preview" width={600} height={400} className="rounded-md object-cover w-full h-full" />
+                                    <Image src={generatedImageUrl} alt="Generated project preview" width={600} height={400} className="rounded-md object-contain w-full h-full" />
                                 ) : (
                                     <div className="text-center text-muted-foreground p-4">
                                         <ImageIcon className="mx-auto h-12 w-12" />
@@ -296,8 +277,12 @@ export default function EditProjectPage() {
                             </CardFooter>
                           </Card>
                           
-                          <Button type="submit" className="w-full" disabled={isGenerating}>
-                              <Save className="mr-2 h-4 w-4" />
+                          <Button type="submit" className="w-full" disabled={isGenerating || form.formState.isSubmitting}>
+                              {form.formState.isSubmitting ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                               ) : (
+                                  <Save className="mr-2 h-4 w-4" />
+                               )}
                               Save Changes
                           </Button>
                       </form>

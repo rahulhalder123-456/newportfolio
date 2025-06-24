@@ -13,13 +13,13 @@ type ProjectCardProps = {
 export default function ProjectCard({ title, summary, url, imageUrl }: ProjectCardProps) {
   return (
     <Card className="flex flex-col h-full bg-secondary border-2 border-transparent transition-all duration-300 hover:border-primary hover:shadow-primary/20 hover:shadow-lg hover:-translate-y-1 overflow-hidden group">
-      <div className="aspect-[3/2] w-full overflow-hidden relative">
+      <div className="aspect-[3/2] w-full overflow-hidden relative bg-black/20">
           <Image
             src={imageUrl || "https://placehold.co/600x400.png"}
             alt={`Image for ${title}`}
             data-ai-hint="abstract software"
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-contain transition-transform duration-300 group-hover:scale-105"
           />
       </div>
       <CardHeader>

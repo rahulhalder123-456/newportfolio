@@ -31,6 +31,7 @@ import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { generateProjectImage } from "@/ai/flows/summarize-project-flow";
 import { getErrorMessage } from "@/lib/utils";
+import { getProjects, addProject, deleteProject, type Project } from "../projects/actions";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
@@ -39,14 +40,6 @@ const formSchema = z.object({
   imageUrl: z.string().url("Please generate an image.").min(1, "Please generate an image."),
 });
 
-type Project = {
-  id: string;
-  url: string;
-  title: string;
-  summary: string;
-  imageUrl: string;
-};
-
 export default function AdminPage() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -54,6 +47,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
 
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem("isAuthenticated");
@@ -80,34 +74,35 @@ export default function AdminPage() {
     setGeneratedImageUrl(imageUrlValue);
   }, [imageUrlValue]);
 
-  function loadProjects() {
+  async function loadProjects() {
+    setIsLoadingProjects(true);
     try {
-      const storedProjects = localStorage.getItem("projects");
-      const loadedProjects = storedProjects ? JSON.parse(storedProjects) : [];
+      const loadedProjects = await getProjects();
       setProjects(loadedProjects);
     } catch (error) {
-      console.error("Failed to load projects from localStorage", error);
+      console.error("Failed to load projects from database", error);
       toast({
         title: "Error",
         description: "Could not load project data.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoadingProjects(false);
     }
   }
 
-  function handleDelete(projectId: string) {
-    try {
-      const updatedProjects = projects.filter(p => p.id !== projectId);
-      localStorage.setItem("projects", JSON.stringify(updatedProjects));
-      setProjects(updatedProjects);
+  async function handleDelete(projectId: string) {
+    const result = await deleteProject(projectId);
+    if (result.success) {
       toast({
         title: "Project Deleted",
         description: "The project has been removed.",
       });
-    } catch (error) {
-       toast({
+      loadProjects(); // Refresh the list
+    } else {
+      toast({
         title: "Error",
-        description: "Could not delete the project.",
+        description: result.error || "Could not delete the project.",
         variant: "destructive",
       });
     }
@@ -154,33 +149,23 @@ export default function AdminPage() {
     }
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const newProject: Project = {
-      id: new Date().toISOString(),
-      ...values,
-    };
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const result = await addProject(values);
 
-    try {
-        const storedProjects = localStorage.getItem("projects");
-        const existingProjects = storedProjects ? JSON.parse(storedProjects) : [];
-        const updatedProjects = [newProject, ...existingProjects];
-        
-        localStorage.setItem("projects", JSON.stringify(updatedProjects));
-        
-        form.reset();
-        setGeneratedImageUrl(null);
-
-        toast({
-            title: "Project Added!",
-            description: "Your new project has been added to the list.",
-        });
-        loadProjects(); // Refresh the list
-    } catch (error) {
-        toast({
-            title: "Error",
-            description: "There was a problem saving your project.",
-            variant: "destructive",
-        });
+    if (result.success) {
+      form.reset();
+      setGeneratedImageUrl(null);
+      toast({
+        title: "Project Added!",
+        description: "Your new project has been added to the database.",
+      });
+      loadProjects(); // Refresh the list
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "There was a problem saving your project.",
+        variant: "destructive",
+      });
     }
   }
 
@@ -280,7 +265,7 @@ export default function AdminPage() {
                                         <span>Generating...</span>
                                     </div>
                                 ) : generatedImageUrl ? (
-                                    <Image src={generatedImageUrl} alt="Generated project preview" width={600} height={400} className="rounded-md object-cover w-full h-full" />
+                                    <Image src={generatedImageUrl} alt="Generated project preview" width={600} height={400} className="rounded-md object-contain w-full h-full" />
                                 ) : (
                                     <div className="text-center text-muted-foreground p-4">
                                         <ImageIcon className="mx-auto h-12 w-12" />
@@ -324,8 +309,12 @@ export default function AdminPage() {
                             </CardFooter>
                           </Card>
                           
-                          <Button type="submit" className="w-full" disabled={isGenerating}>
-                              <PlusCircle className="mr-2 h-4 w-4" />
+                          <Button type="submit" className="w-full" disabled={isGenerating || form.formState.isSubmitting}>
+                              {form.formState.isSubmitting ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                  <PlusCircle className="mr-2 h-4 w-4" />
+                              )}
                               Add Project
                           </Button>
                       </form>
@@ -341,7 +330,12 @@ export default function AdminPage() {
                 <div className="mx-auto max-w-2xl">
                     <h3 className="text-2xl font-bold tracking-tighter mb-6 font-headline">Manage Creations</h3>
                     <div className="space-y-4">
-                        {projects.length > 0 ? (
+                        {isLoadingProjects ? (
+                            <div className="text-center text-muted-foreground py-8">
+                                <Loader2 className="mx-auto h-8 w-8 animate-spin mb-2" />
+                                <p>Loading projects...</p>
+                            </div>
+                        ) : projects.length > 0 ? (
                             projects.map(project => (
                                 <Card key={project.id} className="bg-secondary/50">
                                     <CardContent className="p-4 flex items-center gap-4">
@@ -366,8 +360,7 @@ export default function AdminPage() {
                                                     <AlertDialogHeader>
                                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        This action cannot be undone. This will permanently delete your project
-                                                        and remove its data.
+                                                        This action cannot be undone. This will permanently delete your project from the database.
                                                     </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
@@ -392,4 +385,3 @@ export default function AdminPage() {
     </div>
   );
 }
-    

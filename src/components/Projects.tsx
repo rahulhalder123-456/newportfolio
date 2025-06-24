@@ -1,19 +1,13 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import ProjectCard from "./ProjectCard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-type Project = {
-  id: string;
-  url: string;
-  title: string;
-  summary: string;
-  imageUrl: string;
-};
+import { getProjects, type Project } from "@/app/projects/actions";
 
 type ProjectsProps = {
   limit?: number;
@@ -31,16 +25,22 @@ export default function Projects({
   className,
 }: ProjectsProps) {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedProjects = localStorage.getItem("projects");
-      if (storedProjects) {
-        setAllProjects(JSON.parse(storedProjects));
+    const fetchProjects = async () => {
+      setIsLoading(true);
+      try {
+        const projects = await getProjects();
+        setAllProjects(projects);
+      } catch (error) {
+        console.error("Failed to fetch projects", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to parse projects from localStorage", error);
-    }
+    };
+
+    fetchProjects();
   }, []);
 
   const projectsToDisplay = limit ? allProjects.slice(0, limit) : allProjects;
@@ -56,7 +56,11 @@ export default function Projects({
         </div>
 
         <div className="mt-12">
-          {projectsToDisplay.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : projectsToDisplay.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 text-left">
               {projectsToDisplay.map((project) => (
                 <ProjectCard key={project.id} {...project} />
@@ -69,7 +73,7 @@ export default function Projects({
           )}
         </div>
 
-        {showViewAllButton && limit && allProjects.length > limit && (
+        {showViewAllButton && !isLoading && limit && allProjects.length > limit && (
           <div className="mt-12 text-center">
             <Button asChild>
               <Link href="/projects">
