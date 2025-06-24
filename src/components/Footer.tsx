@@ -1,24 +1,25 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Footer() {
-  const currentYear = useMemo(() => new Date().getFullYear(), []);
+  const [text, setText] = useState('');
+  const [key, setKey] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
+  const [fullFooterText, setFullFooterText] = useState('');
 
-  const fullFooterText = useMemo(
-    () => `> Code Cipher
+  useEffect(() => {
+    const year = new Date().getFullYear();
+    setFullFooterText(`> Code Cipher
 
 [navigation] ./about ./projects ./contact | [socials] open github open linkedin open twitter
 
-© ${currentYear} Code Cipher. All Rights Reserved.`,
-    [currentYear]
-  );
-
-  const [text, setText] = useState('');
-  const [key, setKey] = useState(0); // Used to reset typing animation
-  const [isComplete, setIsComplete] = useState(false); // Determines if typing is finished
+© ${year} Code Cipher. All Rights Reserved.`);
+  }, []);
 
   useEffect(() => {
+    if (!fullFooterText) return;
+
     let typingInterval: NodeJS.Timeout;
     let repeatTimeout: NodeJS.Timeout;
 
