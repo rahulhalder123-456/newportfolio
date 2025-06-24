@@ -60,35 +60,14 @@ export default function About() {
             variants={itemVariants}
           >
             <div className="relative w-[300px] h-[300px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px]">
-              <div
-                className="w-full h-full"
-                style={{ clipPath: "url(#blob-shape)" }}
-              >
                 <Image
                   src="https://placehold.co/400x400.png"
                   alt="Rahul Halder"
                   width={400}
                   height={400}
-                  className="object-cover w-full h-full"
+                  className="object-cover w-full h-full rounded-2xl border-4 border-primary/20 shadow-2xl shadow-primary/20"
                   data-ai-hint="person portrait"
                 />
-              </div>
-              <svg
-                viewBox="0 0 500 500"
-                className="absolute top-0 left-0 w-full h-full pointer-events-none"
-              >
-                <defs>
-                  <clipPath id="blob-shape">
-                    <path d="M433.8,293.3c3.8,32.5-30.5,68.8-62,91.2c-31.5,22.3-60.1,30.8-93,28.8c-32.9-2-70-14.6-94.8-38.3c-24.8-23.7-37.3-58.4-33.8-90.2c3.5-31.8,23-60.7,50.8-79.9c27.8-19.2,63.9-28.7,95.5-23.8c31.6,4.8,58.7,24.3,75.8,51.8C420,240.3,430,260.8,433.8,293.3Z" />
-                  </clipPath>
-                </defs>
-                <path
-                  d="M433.8,293.3c3.8,32.5-30.5,68.8-62,91.2c-31.5,22.3-60.1,30.8-93,28.8c-32.9-2-70-14.6-94.8-38.3c-24.8-23.7-37.3-58.4-33.8-90.2c3.5-31.8,23-60.7,50.8-79.9c27.8-19.2,63.9-28.7,95.5-23.8c31.6,4.8,58.7,24.3,75.8,51.8C420,240.3,430,260.8,433.8,293.3Z"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="8"
-                  fill="none"
-                />
-              </svg>
             </div>
           </motion.div>
           <motion.div 
