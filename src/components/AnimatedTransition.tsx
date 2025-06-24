@@ -49,7 +49,7 @@ export default function AnimatedTransition({ children }: AnimatedTransitionProps
 
         <motion.div
           style={{ opacity: afterOpacity, scale: afterScale }}
-          className="absolute inset-0 z-20"
+          className="absolute inset-0 z-20 overflow-y-auto no-scrollbar"
         >
           {after}
         </motion.div>

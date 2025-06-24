@@ -42,7 +42,7 @@ export default function About() {
 
 
   return (
-    <section id="about" className="relative w-full py-12 md:py-24 lg:py-32 bg-secondary overflow-hidden h-full flex md:items-center">
+    <section id="about" className="relative w-full py-12 md:py-24 lg:py-32 bg-secondary flex items-start md:items-center">
       <div className="absolute inset-0 opacity-10 lg:opacity-15 pointer-events-none">
         <AtomicModel />
       </div>
@@ -64,7 +64,7 @@ export default function About() {
                 alt="Rahul Halder"
                 width={450}
                 height={450}
-                className="object-cover w-fit h-fit"
+                className="object-cover w-full h-full"
                 style={{ objectPosition: 'center', transform: 'scale(1.2)' }}
                 priority
               />
