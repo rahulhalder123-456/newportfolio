@@ -26,19 +26,13 @@ yarn-error.log*
 
 # local env files
 .env*.local
-.env
-.env.development.local
-.env.test.local
-.env.production.local
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
+next-env.d.ts
 
-# aistudio generated files
-aistudio*
-
-# firebase studio
+# project specific
 src/.env
