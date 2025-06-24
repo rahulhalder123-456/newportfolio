@@ -3,24 +3,17 @@
  * @fileOverview An AI flow to generate a project summary from a GitHub repository URL.
  *
  * - summarizeProject - A function that generates a project summary.
- * - SummarizeProjectInput - The input type for the summarizeProject function.
- * - SummarizeProjectOutput - The return type for the summarizeProject function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import {
+    SummarizeProjectInputSchema,
+    type SummarizeProjectInput,
+    SummarizeProjectOutputSchema,
+    type SummarizeProjectOutput
+} from './summarize-project.schema';
 
-// Define the input schema for the flow
-export const SummarizeProjectInputSchema = z.object({
-  githubUrl: z.string().url().describe('The URL of the GitHub repository.'),
-});
-export type SummarizeProjectInput = z.infer<typeof SummarizeProjectInputSchema>;
-
-// Define the output schema for the flow
-export const SummarizeProjectOutputSchema = z.object({
-  summary: z.string().describe('A concise summary of the project, suitable for a portfolio entry.'),
-});
-export type SummarizeProjectOutput = z.infer<typeof SummarizeProjectOutputSchema>;
 
 // Tool to get README content from a GitHub repository
 const getReadmeContent = ai.defineTool(
