@@ -12,8 +12,10 @@ import {
   type ChatbotInput,
   ChatbotOutputSchema,
   type ChatbotOutput,
+  ProjectSchema,
 } from './chatbot.schema';
 import {textToSpeech} from './tts-flow';
+import {getProjects} from '@/app/projects/actions';
 
 export async function askChatbot(input: ChatbotInput): Promise<ChatbotOutput> {
   return chatbotFlow(input);
@@ -21,16 +23,31 @@ export async function askChatbot(input: ChatbotInput): Promise<ChatbotOutput> {
 
 const aboutMeContext = `I'm a full-stack developer with a hacker mindset, passionate about building beautiful, functional, and secure web applications. My expertise spans across the stack, from crafting intuitive front-end experiences with React and Next.js to architecting robust back-end systems with Node.js. I thrive on solving complex problems, exploring system intricacies, and continuously learning new technologies to push the boundaries of what's possible. My skills include React, Next.js, Node.js, TypeScript, Cybersecurity, and AI/ML.`;
 
+const getPortfolioProjects = ai.defineTool(
+  {
+    name: 'getPortfolioProjects',
+    description:
+      'Gets the list of projects from the portfolio database to answer questions about them.',
+    inputSchema: z.void(),
+    outputSchema: z.array(ProjectSchema),
+  },
+  async () => {
+    return await getProjects();
+  }
+);
+
 const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   input: {schema: ChatbotInputSchema},
   output: {schema: z.object({answer: z.string()})},
+  tools: [getPortfolioProjects],
   prompt: `You are a helpful and friendly personal assistant for Rahul Halder.
-Your purpose is to answer questions about Rahul based *only* on the information provided below.
-Do not make up information or answer questions not related to Rahul. If the answer is not in the text, politely say that you don't have that specific information.
+Your purpose is to answer questions about Rahul. You can use your biographical knowledge or use tools to access information from a database.
+If the user asks about Rahul's projects, use the getPortfolioProjects tool to find the answer.
+Do not make up information or answer questions not related to Rahul. If the answer is not in the text or from a tool, politely say that you don't have that specific information.
 Keep your answers concise, friendly, and conversational.
 
-Here is the information about Rahul:
+Here is the biographical information about Rahul:
 ${aboutMeContext}
 
 User's Question: {{{question}}}`,
