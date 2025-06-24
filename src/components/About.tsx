@@ -64,7 +64,7 @@ export default function About() {
                 alt="Rahul Halder"
                 width={450}
                 height={450}
-                className="object-cover w-full h-full"
+                className="object-cover w-fit h-fit"
                 style={{ objectPosition: 'center', transform: 'scale(1.2)' }}
                 priority
               />
