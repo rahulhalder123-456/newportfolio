@@ -104,6 +104,7 @@ export default function Home() {
               title="Latest Creations"
               description="Here are a few of my most recent projects. Feel free to explore more of my work on the projects page."
           />
+          <SectionDivider />
           <Contact />
         </main>
         <Footer />
