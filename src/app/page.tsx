@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import dynamic from 'next/dynamic';
 import SectionDivider from '@/components/SectionDivider';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import AnimatedTransition from '@/components/AnimatedTransition';
 
 const BackgroundArt = dynamic(() => import('@/components/BackgroundArt'), { ssr: false });
 
@@ -91,9 +92,10 @@ export default function Home() {
         <Header />
         <main className="flex-1 relative overflow-x-clip">
           <BackgroundArt />
-          <Hero />
-          <SectionDivider />
-          <About />
+          <AnimatedTransition>
+            <Hero />
+            <About />
+          </AnimatedTransition>
           <Projects
               className="py-12 md:py-24 lg:py-32" 
               limit={3} 

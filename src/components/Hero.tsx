@@ -1,3 +1,4 @@
+
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -9,7 +10,7 @@ const HackerSphere = dynamic(() => import('@/components/HackerSphere'), {
 
 export default function Hero() {
   return (
-    <section className="relative flex items-center justify-center min-h-[100dvh] overflow-hidden">
+    <section className="relative flex items-center justify-center min-h-[100dvh] h-full overflow-hidden">
       <HackerSphere />
       <div className="container relative z-10 text-center">
         <div className="mx-auto max-w-4xl">

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -42,7 +43,7 @@ export default function About() {
 
 
   return (
-    <section id="about" className="relative w-full py-12 md:py-24 lg:py-32 bg-secondary overflow-hidden">
+    <section id="about" className="relative w-full py-12 md:py-24 lg:py-32 bg-secondary overflow-hidden h-full flex items-center">
       <div className="absolute inset-0 opacity-10 lg:opacity-15 pointer-events-none">
         <AtomicModel />
       </div>
@@ -50,7 +51,7 @@ export default function About() {
         <motion.div 
           className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center"
           initial="hidden"
-          whileInView="visible"
+          animate="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
