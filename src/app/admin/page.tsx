@@ -352,7 +352,7 @@ export default function AdminPage() {
                                         </div>
                                         <div className="flex gap-2">
                                             <Button asChild variant="outline" size="icon">
-                                                <Link href={`/admin/edit/${project.id}`}>
+                                                <Link href={`/admin/edit/${encodeURIComponent(project.id)}`}>
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>

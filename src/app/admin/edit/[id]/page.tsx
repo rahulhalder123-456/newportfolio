@@ -39,7 +39,7 @@ type Project = {
 export default function EditProjectPage() {
   const router = useRouter();
   const params = useParams();
-  const projectId = params.id as string;
+  const projectId = params.id ? decodeURIComponent(params.id as string) : '';
 
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -312,5 +312,3 @@ export default function EditProjectPage() {
     </div>
   );
 }
-
-    
