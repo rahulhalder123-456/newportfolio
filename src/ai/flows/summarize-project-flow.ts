@@ -14,8 +14,31 @@ import {
     type SummarizeProjectOutput
 } from './summarize-project.schema';
 
+// Standalone function to fetch README content
+const fetchReadmeContent = async (input: { url: string }): Promise<string> => {
+    try {
+        const url = new URL(input.url);
+        const pathParts = url.pathname.split('/').filter(Boolean);
+        if (pathParts.length < 2) {
+            return "Error: Invalid GitHub repository URL. Could not extract owner and repo.";
+        }
+        const [owner, repo] = pathParts;
 
-// Tool to get README content from a GitHub repository
+        const possibleBranches = ['main', 'master'];
+        for (const branch of possibleBranches) {
+            const readmeUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/README.md`;
+            const response = await fetch(readmeUrl);
+            if (response.ok) {
+                return await response.text();
+            }
+        }
+        return "Error: Could not find README.md in 'main' or 'master' branch.";
+    } catch (e: any) {
+        return `Error: An exception occurred while fetching the README: ${e.message}`;
+    }
+};
+
+// Tool to get README content from a GitHub repository (for potential future use by the AI)
 const getReadmeContent = ai.defineTool(
     {
         name: 'getReadmeContent',
@@ -25,28 +48,7 @@ const getReadmeContent = ai.defineTool(
         }),
         outputSchema: z.string().describe("The content of the README.md file as a string, or an error message if not found."),
     },
-    async (input) => {
-        try {
-            const url = new URL(input.url);
-            const pathParts = url.pathname.split('/').filter(Boolean);
-            if (pathParts.length < 2) {
-                return "Error: Invalid GitHub repository URL. Could not extract owner and repo.";
-            }
-            const [owner, repo] = pathParts;
-
-            const possibleBranches = ['main', 'master'];
-            for (const branch of possibleBranches) {
-                const readmeUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/README.md`;
-                const response = await fetch(readmeUrl);
-                if (response.ok) {
-                    return await response.text();
-                }
-            }
-            return "Error: Could not find README.md in 'main' or 'master' branch.";
-        } catch (e: any) {
-            return `Error: An exception occurred while fetching the README: ${e.message}`;
-        }
-    }
+    fetchReadmeContent
 );
 
 // New schema for the summarization prompt
@@ -73,8 +75,8 @@ const summarizeProjectFlow = ai.defineFlow(
     outputSchema: SummarizeProjectOutputSchema,
   },
   async (input) => {
-    // Step 1: Fetch README content using the tool's function
-    const readmeContent = await getReadmeContent.fn({ url: input.githubUrl });
+    // Step 1: Fetch README content using the standalone function
+    const readmeContent = await fetchReadmeContent({ url: input.githubUrl });
     
     // Step 2: Handle cases where the README could not be fetched
     if (readmeContent.startsWith('Error:')) {
