@@ -3,23 +3,16 @@
  * @fileOverview A Text-to-Speech (TTS) AI flow.
  *
  * - textToSpeech - A function that converts text into audible speech.
- * - TextToSpeechInput - The input type for the TTS function.
- * - TextToSpeechOutput - The return type for the TTS function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import {
+  TextToSpeechInputSchema,
+  type TextToSpeechInput,
+  TextToSpeechOutputSchema,
+  type TextToSpeechOutput,
+} from './tts.schema';
 import wav from 'wav';
-
-export const TextToSpeechInputSchema = z.object({
-  text: z.string().describe('The text to convert to speech.'),
-});
-export type TextToSpeechInput = z.infer<typeof TextToSpeechInputSchema>;
-
-export const TextToSpeechOutputSchema = z.object({
-  audioUrl: z.string().url().describe('A data URI for the generated audio.'),
-});
-export type TextToSpeechOutput = z.infer<typeof TextToSpeechOutputSchema>;
 
 export async function textToSpeech(
   input: TextToSpeechInput
