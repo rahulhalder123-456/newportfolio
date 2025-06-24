@@ -12,6 +12,7 @@ import dynamic from 'next/dynamic';
 import SectionDivider from '@/components/SectionDivider';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import AnimatedTransition from '@/components/AnimatedTransition';
+import HyperloopDivider from '@/components/HyperloopDivider';
 
 const BackgroundArt = dynamic(() => import('@/components/BackgroundArt'), { ssr: false });
 
@@ -103,7 +104,7 @@ export default function Home() {
               title="Latest Creations"
               description="Here are a few of my most recent projects. Feel free to explore more of my work on the projects page."
           />
-          <SectionDivider />
+          <HyperloopDivider />
           <Contact />
         </main>
         <Footer />
