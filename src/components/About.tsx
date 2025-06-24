@@ -4,9 +4,9 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 
-const AtomicModel = dynamic(() => import('@/components/AtomicModel'), { 
-    ssr: false,
-    loading: () => <div className="w-full h-full" />
+const AtomicModel = dynamic(() => import('@/components/AtomicModel'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full" />
 });
 
 export default function About() {
@@ -47,33 +47,34 @@ export default function About() {
         <AtomicModel />
       </div>
       <div className="container relative z-10">
-        <motion.div 
+        <motion.div
           className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          <motion.div 
+          <motion.div
             className="flex justify-center order-first md:order-last"
             variants={itemVariants}
           >
             <div className="relative w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] md:w-[450px] md:h-[450px] rounded-full border-4 border-primary/20 shadow-2xl shadow-primary/20 overflow-hidden">
-                <Image
-                  src="/mine.png"
-                  alt="Rahul Halder"
-                  width={450}
-                  height={450}
-                  className="object-cover w-full h-full scale-110"
-                  data-ai-hint="person portrait"
-                />
+              <Image
+                src="/mine.png"
+                alt="Rahul Halder"
+                width={450}
+                height={450}
+                className="object-cover w-full h-full"
+                style={{ objectPosition: 'center', transform: 'scale(1.2)' }}
+                priority
+              />
             </div>
           </motion.div>
-          <motion.div 
+          <motion.div
             className="flex flex-col justify-center space-y-4"
             variants={containerVariants}
           >
-            <motion.div 
+            <motion.div
               className="space-y-4 text-center md:text-left"
               variants={itemVariants}
             >
@@ -82,16 +83,16 @@ export default function About() {
                 I'm a full-stack developer with a hacker mindset, passionate about building beautiful, functional, and secure web applications. My expertise spans across the stack, from crafting intuitive front-end experiences with React and Next.js to architecting robust back-end systems with Node.js. I thrive on solving complex problems, exploring system intricacies, and continuously learning new technologies to push the boundaries of what's possible.
               </p>
             </motion.div>
-            <motion.div 
+            <motion.div
               className="flex flex-wrap gap-2 justify-center md:justify-start"
               variants={containerVariants}
             >
-              <motion.div variants={skillVariants} className="bg-primary/20 text-primary text-sm font-medium px-3 py-1 rounded-full">React</motion.div>
-              <motion.div variants={skillVariants} className="bg-primary/20 text-primary text-sm font-medium px-3 py-1 rounded-full">Next.js</motion.div>
-              <motion.div variants={skillVariants} className="bg-primary/20 text-primary text-sm font-medium px-3 py-1 rounded-full">Node.js</motion.div>
-              <motion.div variants={skillVariants} className="bg-primary/20 text-primary text-sm font-medium px-3 py-1 rounded-full">TypeScript</motion.div>
-              <motion.div variants={skillVariants} className="bg-primary/20 text-primary text-sm font-medium px-3 py-1 rounded-full">Cybersecurity</motion.div>
-              <motion.div variants={skillVariants} className="bg-primary/20 text-primary text-sm font-medium px-3 py-1 rounded-full">AI/ML</motion.div>
+              <motion.div variants={skillVariants} className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">React</motion.div>
+              <motion.div variants={skillVariants} className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">Next.js</motion.div>
+              <motion.div variants={skillVariants} className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">Node.js</motion.div>
+              <motion.div variants={skillVariants} className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">TypeScript</motion.div>
+              <motion.div variants={skillVariants} className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">Cybersecurity</motion.div>
+              <motion.div variants={skillVariants} className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">AI/ML</motion.div>
             </motion.div>
           </motion.div>
         </motion.div>
