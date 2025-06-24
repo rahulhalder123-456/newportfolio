@@ -58,12 +58,12 @@ export default function About() {
             className="flex justify-center order-first md:order-last"
             variants={itemVariants}
           >
-            <div className="relative w-[300px] h-[300px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px]">
+            <div className="relative w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] md:w-[450px] md:h-[450px]">
                 <Image
                   src="/mine.png"
                   alt="Rahul Halder"
-                  width={400}
-                  height={400}
+                  width={450}
+                  height={450}
                   className="object-cover w-full h-full rounded-full border-4 border-primary/20 shadow-2xl shadow-primary/20"
                   data-ai-hint="person portrait"
                 />
