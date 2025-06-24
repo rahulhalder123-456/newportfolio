@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -60,12 +59,11 @@ export default function About() {
             variants={itemVariants}
           >
             <Image
-              src="https://placehold.co/400x400.png"
+              src="/profile.png"
               alt="Rahul Halder"
               width={400}
               height={400}
               className="rounded-full object-cover border-4 border-primary/50 shadow-lg"
-              data-ai-hint="profile picture"
             />
           </motion.div>
           <motion.div 
