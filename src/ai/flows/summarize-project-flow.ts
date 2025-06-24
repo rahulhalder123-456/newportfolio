@@ -80,7 +80,7 @@ const summarizeProjectFlow = ai.defineFlow(
     
     // Step 2: Handle cases where the README could not be fetched
     if (readmeContent.startsWith('Error:')) {
-        return { summary: readmeContent };
+        throw new Error(readmeContent);
     }
 
     // Step 3: Call the summarization prompt with the fetched content
