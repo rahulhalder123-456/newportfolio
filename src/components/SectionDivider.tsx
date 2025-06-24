@@ -54,7 +54,7 @@ function ParticleSystem({ count, color, speedFactor }: { count: number, color: s
 
 export default function SectionDivider() {
   return (
-    <div className="h-80 w-full relative -my-32 pointer-events-none opacity-30">
+    <div className="h-32 w-full relative pointer-events-none opacity-60">
       <Canvas camera={{ position: [0, 0, 10] }}>
         <ParticleSystem count={3000} color="hsl(var(--primary))" speedFactor={0.3} />
         <ParticleSystem count={3000} color="hsl(var(--accent))" speedFactor={0.4} />
