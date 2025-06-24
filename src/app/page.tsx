@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -14,16 +15,45 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 const BackgroundArt = dynamic(() => import('@/components/BackgroundArt'), { ssr: false });
 
+const loadingSteps = [
+    "Initializing sequence...",
+    "Decrypting data streams...",
+    "Activating neural interface...",
+    "Welcome, operator.",
+];
+
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingStep, setLoadingStep] = useState(0);
 
   useEffect(() => {
-    // Simulate a loading delay to ensure the animation is visible
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // Adjust time as needed
+    // Animate the loading text
+    const textInterval = setInterval(() => {
+        setLoadingStep(prev => {
+            if (prev < loadingSteps.length - 1) {
+                return prev + 1;
+            }
+            clearInterval(textInterval);
+            return prev;
+        });
+    }, 800);
 
-    return () => clearTimeout(timer);
+    // Wait for the page to be fully loaded and a minimum delay
+    const pageLoadPromise = new Promise(resolve => {
+        if (document.readyState === 'complete') {
+            resolve(true);
+        } else {
+            window.addEventListener('load', () => resolve(true), { once: true });
+        }
+    });
+
+    const minDisplayTime = new Promise(resolve => setTimeout(resolve, loadingSteps.length * 800 + 200));
+
+    Promise.all([pageLoadPromise, minDisplayTime]).then(() => {
+        setIsLoading(false);
+    });
+
+    return () => clearInterval(textInterval);
   }, []);
 
   return (
@@ -34,16 +64,30 @@ export default function Home() {
             key="loader"
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            exit={{ opacity: 0, transition: { duration: 0.8, delay: 0.2 } }}
           >
             <LoadingSpinner />
-            <p className="text-lg text-muted-foreground">Initializing sequence...</p>
+            <AnimatePresence mode="wait">
+                <motion.p
+                    key={loadingStep}
+                    className="text-lg text-muted-foreground"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0, transition: { duration: 0.4 } }}
+                    exit={{ opacity: 0, y: -10, transition: { duration: 0.4 } }}
+                >
+                    {loadingSteps[loadingStep]}
+                </motion.p>
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col min-h-[100dvh] bg-background">
+      <motion.div 
+        className="flex flex-col min-h-[100dvh] bg-background"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isLoading ? 0 : 1 }}
+        transition={{ duration: 0.8 }}
+      >
         <Header />
         <main className="flex-1 relative overflow-x-clip">
           <BackgroundArt />
@@ -60,7 +104,7 @@ export default function Home() {
           <Contact />
         </main>
         <Footer />
-      </div>
+      </motion.div>
     </>
   );
 }
