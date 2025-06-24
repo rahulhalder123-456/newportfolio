@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -71,8 +72,7 @@ export default function About() {
                 style={{ clipPath: "url(#blob)" }}
               >
                 <Image
-                  src="https://placehold.co/400x400.png"
-                  data-ai-hint="man hoodie"
+                  src="/profile.png"
                   alt="Rahul Halder"
                   width={400}
                   height={400}
