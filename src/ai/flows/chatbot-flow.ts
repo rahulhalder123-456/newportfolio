@@ -22,6 +22,7 @@ const aboutMeContext = `I'm a full-stack developer with a hacker mindset, passio
 
 const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: ChatbotInputSchema},
   output: {schema: z.string()},
   system: `You are an AI assistant for a developer named Rahul Halder.
