@@ -6,12 +6,14 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {z} from 'zod';
 import {
   ChatbotInputSchema,
   type ChatbotInput,
   ChatbotOutputSchema,
   type ChatbotOutput,
 } from './chatbot.schema';
+import {textToSpeech} from './tts-flow';
 
 export async function askChatbot(input: ChatbotInput): Promise<ChatbotOutput> {
   return chatbotFlow(input);
@@ -22,7 +24,7 @@ const aboutMeContext = `I'm a full-stack developer with a hacker mindset, passio
 const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   input: {schema: ChatbotInputSchema},
-  output: {schema: ChatbotOutputSchema},
+  output: {schema: z.object({answer: z.string()})},
   prompt: `You are a helpful and friendly personal assistant for Rahul Halder.
 Your purpose is to answer questions about Rahul based *only* on the information provided below.
 Do not make up information or answer questions not related to Rahul. If the answer is not in the text, politely say that you don't have that specific information.
@@ -41,9 +43,22 @@ const chatbotFlow = ai.defineFlow(
     outputSchema: ChatbotOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, {
+    // 1. Generate the text response
+    const {output: textOutput} = await prompt(input, {
       model: 'googleai/gemini-1.5-flash-latest',
     });
-    return output!;
+
+    if (!textOutput?.answer) {
+      throw new Error('Failed to generate a text response.');
+    }
+
+    // 2. Generate the audio for the text response
+    const {audioUrl} = await textToSpeech({text: textOutput.answer});
+
+    // 3. Return both
+    return {
+      answer: textOutput.answer,
+      audioUrl: audioUrl,
+    };
   }
 );

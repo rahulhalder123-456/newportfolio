@@ -16,5 +16,6 @@ export type ChatbotInput = z.infer<typeof ChatbotInputSchema>;
 
 export const ChatbotOutputSchema = z.object({
   answer: z.string().describe("The chatbot's answer."),
+  audioUrl: z.string().url().describe('A data URI for the generated audio.'),
 });
 export type ChatbotOutput = z.infer<typeof ChatbotOutputSchema>;
