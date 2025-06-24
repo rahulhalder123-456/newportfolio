@@ -60,7 +60,7 @@ const textToSpeechFlow = ai.defineFlow(
         responseModalities: ['AUDIO'],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: {voiceName: 'Achernar'}, // A different, more dynamic voice
+            prebuiltVoiceConfig: {voiceName: 'Algenib'}, // A male voice for a "hacker" feel
           },
         },
       },
