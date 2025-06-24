@@ -49,15 +49,19 @@ const getReadmeContent = ai.defineTool(
     }
 );
 
-// Prompt to summarize the project
-const summarizeProjectPrompt = ai.definePrompt({
-    name: 'summarizeProjectPrompt',
+// New schema for the summarization prompt
+const SummarizeTextSchema = z.object({
+    readmeContent: z.string(),
+});
+
+// Prompt to summarize the project README content
+const summarizeReadmePrompt = ai.definePrompt({
+    name: 'summarizeReadmePrompt',
     model: 'googleai/gemini-1.5-flash-latest',
-    system: "You are an expert project manager and tech writer. Your task is to create a concise, engaging summary for a software project to be featured in a developer's portfolio. The summary should be based on the project's README file. If the README is unavailable or doesn't provide enough information, state that clearly.",
-    tools: [getReadmeContent],
-    input: { schema: SummarizeProjectInputSchema },
+    system: "You are an expert project manager and tech writer. Your task is to create a concise, engaging summary for a software project to be featured in a developer's portfolio, based on the provided README file content. The summary should be approximately 2-3 sentences long and highlight the project's purpose and key technologies.",
+    input: { schema: SummarizeTextSchema },
     output: { schema: SummarizeProjectOutputSchema },
-    prompt: `Please generate a project summary for the repository at the following URL: {{{githubUrl}}}. Use the getReadmeContent tool to fetch the README.md file. The summary should be approximately 2-3 sentences long and highlight the project's purpose and key technologies.`,
+    prompt: `Please generate a project summary from the following README content:\n\n{{{readmeContent}}}`,
 });
 
 
@@ -69,7 +73,16 @@ const summarizeProjectFlow = ai.defineFlow(
     outputSchema: SummarizeProjectOutputSchema,
   },
   async (input) => {
-    const {output} = await summarizeProjectPrompt(input);
+    // Step 1: Fetch README content using the tool's function
+    const readmeContent = await getReadmeContent.fn({ url: input.githubUrl });
+    
+    // Step 2: Handle cases where the README could not be fetched
+    if (readmeContent.startsWith('Error:')) {
+        return { summary: readmeContent };
+    }
+
+    // Step 3: Call the summarization prompt with the fetched content
+    const {output} = await summarizeReadmePrompt({ readmeContent });
     return output!;
   }
 );
