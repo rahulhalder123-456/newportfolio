@@ -9,7 +9,6 @@ import About from '@/components/About';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import dynamic from 'next/dynamic';
-import SectionDivider from '@/components/SectionDivider';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import AnimatedTransition from '@/components/AnimatedTransition';
 import HyperloopDivider from '@/components/HyperloopDivider';
@@ -96,7 +95,6 @@ export default function Home() {
             <Hero />
             <About />
           </AnimatedTransition>
-          <SectionDivider />
           <Projects
               className="py-12 md:py-24 lg:py-32" 
               limit={3} 

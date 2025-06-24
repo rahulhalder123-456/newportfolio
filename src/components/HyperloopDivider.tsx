@@ -5,7 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import type { Points as PointsType } from 'three';
 
-function Starfield({ count, speedFactor }: { count: number, speedFactor: number }) {
+function Starfield({ count, speedFactor, color }: { count: number, speedFactor: number, color: string }) {
   const ref = useRef<PointsType>(null!);
   
   const positions = useMemo(() => {
@@ -22,7 +22,7 @@ function Starfield({ count, speedFactor }: { count: number, speedFactor: number 
   useFrame((state, delta) => {
     if (ref.current) {
         const currentPositions = ref.current.geometry.attributes.position.array as Float32Array;
-        const speed = delta * speedFactor * 50;
+        const speed = delta * speedFactor;
 
         for (let i = 0; i < count; i++) {
             const i3 = i * 3;
@@ -40,8 +40,8 @@ function Starfield({ count, speedFactor }: { count: number, speedFactor: number 
     <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
       <PointMaterial
         transparent
-        color="hsl(var(--primary))"
-        size={0.03}
+        color={color}
+        size={0.025}
         sizeAttenuation={true}
         depthWrite={false}
       />
@@ -54,7 +54,8 @@ export default function HyperloopDivider() {
     <div className="h-40 w-full relative pointer-events-none">
       <Canvas camera={{ position: [0, 0, 0.1], fov: 75 }}>
         <fog attach="fog" args={['hsl(var(--background))', 5, 15]} />
-        <Starfield count={5000} speedFactor={0.1} />
+        <Starfield count={2500} speedFactor={0.8} color="hsl(var(--primary))" />
+        <Starfield count={2500} speedFactor={0.4} color="hsl(var(--accent))" />
       </Canvas>
     </div>
   );
