@@ -52,6 +52,7 @@ const getReadmeContent = ai.defineTool(
 // Prompt to summarize the project
 const summarizeProjectPrompt = ai.definePrompt({
     name: 'summarizeProjectPrompt',
+    model: 'googleai/gemini-1.5-flash-latest',
     system: "You are an expert project manager and tech writer. Your task is to create a concise, engaging summary for a software project to be featured in a developer's portfolio. The summary should be based on the project's README file. If the README is unavailable or doesn't provide enough information, state that clearly.",
     tools: [getReadmeContent],
     input: { schema: SummarizeProjectInputSchema },
