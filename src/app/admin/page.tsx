@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, FileCode, Link as LinkIcon } from "lucide-react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Skeleton } from "@/components/ui/skeleton";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
@@ -86,30 +86,11 @@ export default function AdminPage() {
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
         <main className="flex-1 flex items-center justify-center">
-            <div className="container">
-                <div className="mx-auto max-w-2xl">
-                    <Card>
-                        <CardHeader>
-                            <Skeleton className="h-8 w-48" />
-                            <Skeleton className="h-4 w-full mt-2" />
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-24" />
-                                <Skeleton className="h-10 w-full" />
-                            </div>
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-24" />
-                                <Skeleton className="h-10 w-full" />
-                            </div>
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-24" />
-                                <Skeleton className="h-20 w-full" />
-                            </div>
-                             <Skeleton className="h-10 w-full" />
-                        </CardContent>
-                    </Card>
-                </div>
+            <div className="container text-center">
+                <LoadingSpinner />
+                <p className="text-lg text-muted-foreground animate-pulse">
+                    Verifying access...
+                </p>
             </div>
         </main>
         <Footer />
