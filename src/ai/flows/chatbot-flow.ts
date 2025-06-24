@@ -12,10 +12,7 @@ import {
   type ChatbotInput,
   ChatbotOutputSchema,
   type ChatbotOutput,
-  ProjectSchema,
 } from './chatbot.schema';
-// textToSpeech has been removed to reduce API calls and avoid quota issues.
-import {getProjects} from '@/app/projects/actions';
 
 export async function askChatbot(input: ChatbotInput): Promise<ChatbotOutput> {
   return chatbotFlow(input);
@@ -23,30 +20,15 @@ export async function askChatbot(input: ChatbotInput): Promise<ChatbotOutput> {
 
 const aboutMeContext = `I'm a full-stack developer with a hacker mindset, passionate about building beautiful, functional, and secure web applications. My expertise spans across the stack, from crafting intuitive front-end experiences with React and Next.js to architecting robust back-end systems with Node.js. I thrive on solving complex problems, exploring system intricacies, and continuously learning new technologies to push the boundaries of what's possible. My skills include React, Next.js, Node.js, TypeScript, Cybersecurity, and AI/ML.`;
 
-const getPortfolioProjects = ai.defineTool(
-  {
-    name: 'getPortfolioProjects',
-    description:
-      "Use this tool to get a list of all of Rahul Halder's portfolio projects. It returns an array of project objects, each with a title, summary, and URL.",
-    inputSchema: z.void(),
-    outputSchema: z.array(ProjectSchema),
-  },
-  async () => {
-    return await getProjects();
-  }
-);
-
 const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   input: {schema: ChatbotInputSchema},
-  output: {schema: z.string()}, // The final output should be a simple string.
-  tools: [getPortfolioProjects],
+  output: {schema: z.string()},
   system: `You are an AI assistant for a developer named Rahul Halder.
 - Your persona is a helpful, slightly mysterious "hacker".
-- When asked about Rahul's projects, you MUST use the 'getPortfolioProjects' tool to get the project list.
-- When asked about skills or background, use this context: "${aboutMeContext}".
-- NEVER mention the name of the tool you used. Just give the answer.
-- Your final output must only be the text of your answer. Do not wrap it in JSON.`,
+- Answer questions based on the following context about Rahul: "${aboutMeContext}".
+- Do not answer questions outside of this context. If you don't know the answer, say "That information is beyond my current access parameters."
+- Your final output must only be the text of your answer.`,
   prompt: `User question: {{{question}}}`,
 });
 
@@ -57,24 +39,15 @@ const chatbotFlow = ai.defineFlow(
     outputSchema: ChatbotOutputSchema,
   },
   async input => {
-    // 1. Generate the text response using a more powerful model
-    const response = await prompt(input, {
-      model: 'googleai/gemini-1.5-pro-latest',
-    });
-
+    // Using the default model to avoid quota issues.
+    const response = await prompt(input);
     const answer = response.output;
 
     if (!answer) {
-      // If the model *still* fails, provide a specific error message.
-      const fallbackAnswer = "My apologies, operator. I'm having trouble retrieving that information. The data stream appears to be corrupted. Please try a different query.";
-      return {
-        answer: fallbackAnswer,
-      };
+      const fallbackAnswer = "My apologies, operator. I'm having trouble accessing my core directives. Please try again.";
+      return { answer: fallbackAnswer };
     }
 
-    // 2. Return the text answer
-    return {
-      answer: answer,
-    };
+    return { answer: answer };
   }
 );
