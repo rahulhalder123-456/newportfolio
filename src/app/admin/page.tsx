@@ -25,7 +25,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, FileCode, Link as LinkIcon, Loader2, Sparkles, Image as ImageIcon, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, FileCode, Link as LinkIcon, Loader2, Sparkles, Image as ImageIcon, Edit, Trash2, LogOut } from "lucide-react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -106,6 +106,11 @@ export default function AdminPage() {
         variant: "destructive",
       });
     }
+  }
+
+  function handleLogout() {
+    sessionStorage.removeItem("isAuthenticated");
+    router.replace("/login");
   }
 
   async function handleGenerateImage() {
@@ -193,6 +198,12 @@ export default function AdminPage() {
         <section id="add-project" className="w-full">
           <div className="container">
             <div className="mx-auto max-w-2xl">
+              <div className="w-full flex justify-end mb-4">
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
               <Card>
                   <CardHeader>
                       <CardTitle>Add a New Creation</CardTitle>
