@@ -36,7 +36,7 @@ export default function Home() {
             clearInterval(textInterval);
             return prev;
         });
-    }, 800);
+    }, 550);
 
     // Wait for the page to be fully loaded and a minimum delay
     const pageLoadPromise = new Promise(resolve => {
@@ -47,7 +47,7 @@ export default function Home() {
         }
     });
 
-    const minDisplayTime = new Promise(resolve => setTimeout(resolve, loadingSteps.length * 800 + 200));
+    const minDisplayTime = new Promise(resolve => setTimeout(resolve, loadingSteps.length * 550 + 200));
 
     Promise.all([pageLoadPromise, minDisplayTime]).then(() => {
         setIsLoading(false);
