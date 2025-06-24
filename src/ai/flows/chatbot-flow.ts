@@ -39,7 +39,7 @@ const getPortfolioProjects = ai.defineTool(
 const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   input: {schema: ChatbotInputSchema},
-  output: {schema: z.object({answer: z.string()})},
+  output: {schema: z.string()}, // Ask for a simple string, not a JSON object.
   tools: [getPortfolioProjects],
   system: `You are an AI assistant for Rahul Halder. Your job is to answer the user's question.
 You have access to a tool called \`getPortfolioProjects\` to find out about his projects.
@@ -50,7 +50,7 @@ You have access to a tool called \`getPortfolioProjects\` to find out about his 
 3.  For general questions about Rahul's skills or background, use this context: "${aboutMeContext}".
 4.  When you write your final answer, adopt a helpful, slightly mysterious "hacker" persona.
 5.  **Never** mention that you are using a tool. Just give the answer.
-6.  Your final output must be a single JSON object with a key named "answer".
+6.  Your final output must be only the text of your answer. Do NOT wrap it in JSON.
 
 Begin.
 
@@ -69,18 +69,18 @@ const chatbotFlow = ai.defineFlow(
       model: 'googleai/gemini-1.5-flash-latest',
     });
 
-    const textOutput = response.output;
+    const answer = response.output; // answer is now a string or undefined
 
-    if (!textOutput?.answer) {
+    if (!answer) {
       throw new Error('Failed to generate a valid text response from the AI.');
     }
 
     // 2. Generate the audio for the text response
-    const {audioUrl} = await textToSpeech({text: textOutput.answer});
+    const {audioUrl} = await textToSpeech({text: answer});
 
     // 3. Return both
     return {
-      answer: textOutput.answer,
+      answer: answer,
       audioUrl: audioUrl,
     };
   }
