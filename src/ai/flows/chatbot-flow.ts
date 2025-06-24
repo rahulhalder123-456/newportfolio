@@ -32,9 +32,6 @@ Here is the information about Rahul:
 ${aboutMeContext}
 
 User's Question: {{{question}}}`,
-  config: {
-    model: 'googleai/gemini-1.5-flash-latest',
-  },
 });
 
 const chatbotFlow = ai.defineFlow(
@@ -44,7 +41,9 @@ const chatbotFlow = ai.defineFlow(
     outputSchema: ChatbotOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(input, {
+      model: 'googleai/gemini-1.5-flash-latest',
+    });
     return output!;
   }
 );
