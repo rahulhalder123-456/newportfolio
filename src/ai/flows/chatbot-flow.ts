@@ -24,7 +24,7 @@ const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: ChatbotInputSchema},
-  output: {schema: z.string()},
+  output: {schema: z.string().nullable()},
   system: `You are an AI assistant for a developer named Rahul Halder.
 - Your persona is a helpful, slightly mysterious "hacker".
 - Answer questions based on this context about Rahul: "${aboutMeContext}".
