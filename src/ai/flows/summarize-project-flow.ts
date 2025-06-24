@@ -20,7 +20,7 @@ const fetchReadmeContent = async (input: { url: string }): Promise<string> => {
         const url = new URL(input.url);
         const pathParts = url.pathname.split('/').filter(Boolean);
         if (pathParts.length < 2) {
-            return "Error: Invalid GitHub repository URL. Could not extract owner and repo.";
+            throw new Error("Invalid GitHub repository URL. Could not extract owner and repo.");
         }
         const [owner, repo] = pathParts;
 
@@ -32,9 +32,13 @@ const fetchReadmeContent = async (input: { url: string }): Promise<string> => {
                 return await response.text();
             }
         }
-        return "Error: Could not find README.md in 'main' or 'master' branch.";
+        throw new Error("Could not find README.md in 'main' or 'master' branch.");
     } catch (e: any) {
-        return `Error: An exception occurred while fetching the README: ${e.message}`;
+        // Re-throw custom errors or a generic one for other issues (like network errors)
+        if (e.message.includes('Invalid GitHub') || e.message.includes('Could not find README')) {
+            throw e;
+        }
+        throw new Error(`An exception occurred while fetching the README: ${e.message}`);
     }
 };
 
@@ -48,7 +52,13 @@ const getReadmeContent = ai.defineTool(
         }),
         outputSchema: z.string().describe("The content of the README.md file as a string, or an error message if not found."),
     },
-    fetchReadmeContent
+    async (input) => {
+        try {
+            return await fetchReadmeContent(input);
+        } catch (error: any) {
+            return error.message;
+        }
+    }
 );
 
 // New schema for the summarization prompt
@@ -75,15 +85,10 @@ const summarizeProjectFlow = ai.defineFlow(
     outputSchema: SummarizeProjectOutputSchema,
   },
   async (input) => {
-    // Step 1: Fetch README content using the standalone function
+    // Step 1: Fetch README content. If it fails, it will throw and be caught by the UI.
     const readmeContent = await fetchReadmeContent({ url: input.githubUrl });
     
-    // Step 2: Handle cases where the README could not be fetched
-    if (readmeContent.startsWith('Error:')) {
-        throw new Error(readmeContent);
-    }
-
-    // Step 3: Call the summarization prompt with the fetched content
+    // Step 2: Call the summarization prompt with the fetched content
     const {output} = await summarizeReadmePrompt({ readmeContent });
     return output!;
   }
