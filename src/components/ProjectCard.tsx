@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Github, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 type ProjectCardProps = {
   title: string;
@@ -19,13 +19,12 @@ export default function ProjectCard({ title, summary, url, imageUrl }: ProjectCa
             alt={`Image for ${title}`}
             data-ai-hint="abstract software"
             fill
-            className="object-contain transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
       </div>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-headline">
-          <Github className="w-5 h-5 text-primary" />
-          <span>{title}</span>
+        <CardTitle className="font-headline">
+          {title}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">

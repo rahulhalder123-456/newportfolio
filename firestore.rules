@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Deny all client-side reads and writes by default.
+    // All database access in this application is performed via server-side
+    // logic using the Firebase Admin SDK, which securely bypasses these rules.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
