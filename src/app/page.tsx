@@ -92,6 +92,7 @@ export default function Home() {
         <main className="flex-1 relative overflow-x-clip">
           <BackgroundArt />
           <Hero />
+          <SectionDivider />
           <About />
           <Projects
               className="py-12 md:py-24 lg:py-32" 
