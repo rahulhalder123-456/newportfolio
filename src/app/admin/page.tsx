@@ -225,7 +225,7 @@ export default function AdminPage() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center gap-4">
-                               <div className="w-full aspect-video rounded-md bg-background/50 border border-dashed flex items-center justify-center">
+                               <div className="w-full aspect-[3/2] rounded-md bg-background/50 border border-dashed flex items-center justify-center">
                                 {isGenerating ? (
                                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                                         <Loader2 className="h-8 w-8 animate-spin" />

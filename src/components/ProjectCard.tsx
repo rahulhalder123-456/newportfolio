@@ -13,7 +13,7 @@ type ProjectCardProps = {
 export default function ProjectCard({ title, summary, url, imageUrl }: ProjectCardProps) {
   return (
     <Card className="flex flex-col h-full bg-secondary border-2 border-transparent transition-all duration-300 hover:border-primary hover:shadow-primary/20 hover:shadow-lg hover:-translate-y-1 overflow-hidden group">
-      <div className="aspect-video w-full overflow-hidden relative">
+      <div className="aspect-[3/2] w-full overflow-hidden relative">
           <Image
             src={imageUrl || "https://placehold.co/600x400.png"}
             alt={`Image for ${title}`}

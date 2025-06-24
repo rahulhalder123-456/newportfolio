@@ -29,6 +29,7 @@ const generateProjectImageFlow = ai.defineFlow(
     const { media } = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: `Generate a visually stunning and abstract image that represents a software project.
+The final image must have an aspect ratio of 3:2 (landscape, like 600x400 pixels).
 The image should be suitable for a dark-themed developer portfolio, with a cyberpunk or futuristic aesthetic.
 Use a dark color palette with vibrant accents of purple, teal, and magenta.
 The image should be compelling, abstract, and not a literal representation.
