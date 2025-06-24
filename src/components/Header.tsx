@@ -5,7 +5,15 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { CodeXml, Github, Linkedin, Briefcase, Menu } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
 export default function Header() {
@@ -61,6 +69,12 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation Menu</SheetTitle>
+                <SheetDescription>
+                  Links to different sections of the portfolio and social media profiles.
+                </SheetDescription>
+              </SheetHeader>
               <div className="flex flex-col h-full">
                 <div className="p-6">
                     <SheetClose asChild>
@@ -70,6 +84,7 @@ export default function Header() {
                         </Link>
                     </SheetClose>
                 </div>
+                <Separator />
                 <nav className="flex flex-col p-6 space-y-4">
                   {navLinks.map(link => (
                     <SheetClose asChild key={link.label}>
