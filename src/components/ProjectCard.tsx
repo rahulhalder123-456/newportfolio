@@ -19,7 +19,7 @@ export default function ProjectCard({ title, summary, url, imageUrl }: ProjectCa
             alt={`Image for ${title}`}
             data-ai-hint="abstract software"
             fill
-            className="object-contain transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
       </div>
       <CardHeader>
