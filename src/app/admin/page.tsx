@@ -12,10 +12,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, FileCode, Link as LinkIcon } from "lucide-react";
+import { PlusCircle, FileCode, Link as LinkIcon, Loader2, Sparkles } from "lucide-react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { summarizeProject } from "@/ai/flows/summarize-project-flow";
+import { getErrorMessage } from "@/lib/utils";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
@@ -33,6 +35,7 @@ type Project = {
 export default function AdminPage() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,6 +55,44 @@ export default function AdminPage() {
       url: "",
     },
   });
+
+  async function handleGenerateSummary() {
+    const url = form.getValues("url");
+    if (!url || !z.string().url().safeParse(url).success) {
+        toast({
+            title: "Invalid URL",
+            description: "Please enter a valid GitHub repository URL first.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    setIsGenerating(true);
+    try {
+        const result = await summarizeProject({ githubUrl: url });
+        if (result && result.summary) {
+            form.setValue("summary", result.summary, { shouldValidate: true });
+            toast({
+                title: "Summary Generated!",
+                description: "The AI-powered summary has been populated.",
+            });
+        } else {
+            toast({
+                title: "Error",
+                description: "Could not generate summary. Check if the repo is public and has a README.",
+                variant: "destructive",
+            });
+        }
+    } catch (error) {
+        toast({
+            title: "Generation Failed",
+            description: getErrorMessage(error),
+            variant: "destructive",
+        });
+    } finally {
+        setIsGenerating(false);
+    }
+  }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const newProject: Project = {
@@ -149,16 +190,37 @@ export default function AdminPage() {
                           control={form.control}
                           name="summary"
                           render={({ field }) => (
-                              <FormItem className="md:col-span-2">
+                            <FormItem className="md:col-span-2">
+                                <div className="flex items-center justify-between">
                                   <FormLabel>Summary</FormLabel>
-                                  <FormControl>
-                                  <Textarea placeholder="A short description of the project..." {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                              </FormItem>
+                                  <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={handleGenerateSummary}
+                                      disabled={isGenerating || form.formState.isSubmitting}
+                                  >
+                                      {isGenerating ? (
+                                          <>
+                                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                              Generating...
+                                          </>
+                                      ) : (
+                                          <>
+                                              <Sparkles className="mr-2 h-4 w-4" />
+                                              Generate with AI
+                                          </>
+                                      )}
+                                  </Button>
+                                </div>
+                                <FormControl>
+                                <Textarea placeholder="A short description of the project..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                           )}
                           />
-                          <Button type="submit" className="w-full md:col-span-2">
+                          <Button type="submit" className="w-full md:col-span-2" disabled={isGenerating}>
                               <PlusCircle className="mr-2 h-4 w-4" />
                               Add Project
                           </Button>

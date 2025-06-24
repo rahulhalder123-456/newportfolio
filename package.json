@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@genkit-ai/google-ai": "^1.0.0",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -40,6 +41,7 @@
     "dotenv": "^16.4.5",
     "firebase": "^10.12.2",
     "framer-motion": "^11.2.12",
+    "genkit": "^1.0.0",
     "lucide-react": "^0.400.0",
     "next": "14.2.5",
     "react": "^18.3.1",

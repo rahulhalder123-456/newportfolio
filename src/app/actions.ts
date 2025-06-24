@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { Resend } from 'resend';
+import { getErrorMessage } from '@/lib/utils';
 
 const sendEmailSchema = z.object({
   name: z.string().min(2),
@@ -13,23 +14,6 @@ type SendEmailInput = z.infer<typeof sendEmailSchema>;
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const toEmail = process.env.EMAIL_RECIPIENT;
-
-function getErrorMessage(error: unknown): string {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-        return error.message;
-    }
-    if (typeof error === 'string') {
-        return error;
-    }
-    if (typeof error === 'object' && error !== null) {
-        return JSON.stringify(error);
-    }
-    return 'An unknown error occurred.';
-}
-
 
 export async function sendEmail(input: SendEmailInput) {
   const validatedFields = sendEmailSchema.safeParse(input);
