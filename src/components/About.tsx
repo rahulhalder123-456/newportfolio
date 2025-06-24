@@ -65,11 +65,12 @@ export default function About() {
                 style={{ clipPath: "url(#blob-shape)" }}
               >
                 <Image
-                  src="/mine.png"
+                  src="https://placehold.co/400x400.png"
                   alt="Rahul Halder"
                   width={400}
                   height={400}
                   className="object-cover w-full h-full"
+                  data-ai-hint="person portrait"
                 />
               </div>
               <svg
