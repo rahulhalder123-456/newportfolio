@@ -12,6 +12,7 @@ import dynamic from 'next/dynamic';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import AnimatedTransition from '@/components/AnimatedTransition';
 import HyperloopDivider from '@/components/HyperloopDivider';
+import Chatbot from '@/components/Chatbot';
 
 const BackgroundArt = dynamic(() => import('@/components/BackgroundArt'), { ssr: false });
 
@@ -104,6 +105,7 @@ export default function Home() {
           />
           <HyperloopDivider />
           <Contact />
+          <Chatbot />
         </main>
         <Footer />
       </motion.div>
