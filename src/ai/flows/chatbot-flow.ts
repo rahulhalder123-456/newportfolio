@@ -3,22 +3,15 @@
  * @fileOverview A chatbot AI flow to answer questions about Rahul Halder.
  *
  * - askChatbot - A function that handles the chatbot conversation.
- * - ChatbotInput - The input type for the askChatbot function.
- * - ChatbotOutput - The return type for the askChatbot function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
-
-export const ChatbotInputSchema = z.object({
-  question: z.string().describe('The user\'s question for the chatbot.'),
-});
-export type ChatbotInput = z.infer<typeof ChatbotInputSchema>;
-
-export const ChatbotOutputSchema = z.object({
-  answer: z.string().describe('The chatbot\'s answer.'),
-});
-export type ChatbotOutput = z.infer<typeof ChatbotOutputSchema>;
+import {
+  ChatbotInputSchema,
+  type ChatbotInput,
+  ChatbotOutputSchema,
+  type ChatbotOutput,
+} from './chatbot.schema';
 
 export async function askChatbot(input: ChatbotInput): Promise<ChatbotOutput> {
   return chatbotFlow(input);
@@ -41,7 +34,7 @@ ${aboutMeContext}
 User's Question: {{{question}}}`,
   config: {
     model: 'googleai/gemini-1.5-flash-latest',
-  }
+  },
 });
 
 const chatbotFlow = ai.defineFlow(
