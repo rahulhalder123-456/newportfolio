@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -11,6 +10,7 @@ import { chatWithVibeBot } from '@/ai/flows/chatbot-flow';
 import { getErrorMessage } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import FacePlexus from './FacePlexus';
+import ChatLoadingAnimation from './ChatLoadingAnimation';
 
 type Message = {
   id: number;
@@ -195,8 +195,8 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <Bot className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="bg-secondary/80 backdrop-blur-sm rounded-lg px-4 py-2">
-                     <Loader2 className="w-5 h-5 animate-spin"/>
+                  <div className="bg-secondary/80 backdrop-blur-sm rounded-lg p-0 flex items-center justify-center overflow-hidden">
+                     <ChatLoadingAnimation />
                   </div>
               </div>
             )}
