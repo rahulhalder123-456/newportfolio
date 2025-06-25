@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -27,6 +28,7 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [audioToPlay, setAudioToPlay] = useState<string | null>(null);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -40,17 +42,23 @@ export default function Chatbot() {
     }
   }, [messages]);
 
-  const handleAudioPlayback = (audioUrl: string) => {
-    const audio = new Audio(audioUrl);
-    audio.play().catch(e => {
+  // Robust audio playback using useEffect
+  useEffect(() => {
+    if (audioToPlay && isAudioEnabled) {
+      const audio = new Audio(audioToPlay);
+      audio.play().catch(e => {
         console.error("Audio playback failed:", e);
         toast({
             title: "Audio Playback Error",
             description: "Could not play audio automatically. Your browser might be blocking it.",
             variant: "destructive",
         });
-    });
-  };
+      });
+      // Reset the state after attempting to play
+      setAudioToPlay(null);
+    }
+  }, [audioToPlay, isAudioEnabled, toast]);
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,8 +75,8 @@ export default function Chatbot() {
         const assistantMessage: Message = { role: "assistant", content: result.answer };
         setMessages((prev) => [...prev, assistantMessage]);
 
-        if (isAudioEnabled && result.audioUrl) {
-          handleAudioPlayback(result.audioUrl);
+        if (result.audioUrl) {
+          setAudioToPlay(result.audioUrl);
         }
 
       } else {
