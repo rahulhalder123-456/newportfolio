@@ -77,11 +77,11 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
         setAudioToPlay(result.audioUrl);
       }
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
+      console.error(`Chatbot failed: ${getErrorMessage(error)}`);
       const botMessage: Message = {
         id: Date.now() + 1,
         role: 'bot',
-        text: `Oof, major L. My circuits are fried. (${errorMessage})`,
+        text: `Oof, major L. My circuits are fried right now. Maybe try again later.`,
       };
       setMessages((prev) => [...prev, botMessage]);
     } finally {
@@ -127,7 +127,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
                 )}
                 <div
                   className={cn(
-                    'max-w-[80%] rounded-lg px-4 py-2 text-sm',
+                    'max-w-[80%] rounded-lg px-4 py-2 text-sm break-words',
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-secondary'
