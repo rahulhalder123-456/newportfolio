@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Bot, User, Loader2, X } from 'lucide-react';
+import { Send, Bot, User, Loader2, X, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,13 +24,14 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const synthesisRef = useRef<SpeechSynthesis | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       synthesisRef.current = window.speechSynthesis;
       const loadVoices = () => {
         setVoices(synthesisRef.current?.getVoices() ?? []);
@@ -46,6 +47,13 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
     setMessages([
       { id: 1, role: 'bot', text: "Ayo, what's the tea? Ask me anything." }
     ]);
+
+    // Cleanup synthesis on component unmount
+    return () => {
+        if (synthesisRef.current) {
+            synthesisRef.current.cancel();
+        }
+    }
   }, []);
 
   useEffect(() => {
@@ -59,13 +67,12 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   
   const speak = (text: string) => {
     const synthesis = synthesisRef.current;
-    if (!synthesis || voices.length === 0) return;
+    if (!isVoiceEnabled || !synthesis || voices.length === 0) return;
     
     synthesis.cancel(); // Stop any previous speech
     const utterance = new SpeechSynthesisUtterance(text);
     
     // Voice selection for a "GenZ hacker" vibe.
-    // Prioritizes a standard, often clear Google voice, then a US female voice.
     const preferredVoice = voices.find(voice => voice.name === 'Google US English') ||
                           voices.find(voice => voice.lang === 'en-US' && voice.name.toLowerCase().includes('female')) ||
                           voices.find(voice => voice.lang.startsWith('en-US')) ||
@@ -80,6 +87,14 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
     utterance.pitch = 1; // Slightly higher pitch
 
     synthesis.speak(utterance);
+  };
+  
+  const toggleVoice = () => {
+    const isNowEnabled = !isVoiceEnabled;
+    setIsVoiceEnabled(isNowEnabled);
+    if (!isNowEnabled && synthesisRef.current) {
+        synthesisRef.current.cancel();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,12 +140,17 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
             <Bot className="h-6 w-6 text-primary animate-pulse" />
             <h3 className="font-bold text-lg text-primary">VibeBot</h3>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => {
-            if (synthesisRef.current) synthesisRef.current.cancel();
-            onClose();
-          }}>
-            <X className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={toggleVoice} aria-label={isVoiceEnabled ? 'Disable voice' : 'Enable voice'}>
+              {isVoiceEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => {
+              if (synthesisRef.current) synthesisRef.current.cancel();
+              onClose();
+            }}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </header>
 
         <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
