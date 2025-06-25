@@ -40,7 +40,6 @@ export default function EditProjectPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
-  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,7 +66,6 @@ export default function EditProjectPage() {
           if (projectToEdit) {
               form.reset(projectToEdit);
               setGeneratedImageUrl(projectToEdit.imageUrl);
-              setOriginalImageUrl(projectToEdit.imageUrl); // Store the original image
           } else {
               toast({ title: "Error", description: "Project not found.", variant: "destructive" });
               router.replace("/admin");
@@ -116,16 +114,19 @@ export default function EditProjectPage() {
             throw new Error("The AI model did not return an image.");
         }
     } catch (error) {
-        if (originalImageUrl) {
-            form.setValue("imageUrl", originalImageUrl, { shouldValidate: true });
-            setGeneratedImageUrl(originalImageUrl);
+        const errorMessage = getErrorMessage(error);
+        let userFriendlyMessage = errorMessage;
+
+        if (errorMessage.includes("API key")) {
+            userFriendlyMessage = 'Authentication error. Please check if your GOOGLE_API_KEY is configured correctly in the .env.local file and that the server has been restarted.';
         }
+
         toast({
-            title: "AI Generation Failed",
-            description: "The AI likely timed out. Reverted to the original image. You can try again.",
+            title: "Image Generation Failed",
+            description: userFriendlyMessage,
             variant: "destructive",
         });
-        console.error("AI Generation Error:", getErrorMessage(error));
+        console.error("AI Generation Error:", errorMessage);
     } finally {
         setIsGenerating(false);
     }
