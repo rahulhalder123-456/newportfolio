@@ -1,8 +1,8 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Suspense, useState, useEffect, useRef, useMemo } from 'react';
-import { useGLTF, Preload, Environment } from '@react-three/drei';
+import { Suspense, useState, useEffect, useMemo } from 'react';
+import { useGLTF, Preload, Environment, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
 const modelData = [
