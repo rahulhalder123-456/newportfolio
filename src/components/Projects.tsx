@@ -57,7 +57,7 @@ export default function Projects({
           )}
         </div>
 
-        {showViewAllButton && !isLoading && limit && projects.length > limit && (
+        {showViewAllButton && !isLoading && projectsToDisplay.length > 0 && (
           <div className="mt-12 text-center">
             <Button asChild>
               <Link href="/projects">
