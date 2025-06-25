@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Bot, User, Loader2, X, Volume2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -88,30 +88,6 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       setIsLoading(false);
     }
   };
-
-  const playMessageAudio = (text: string) => {
-    setIsLoading(true);
-    textToSpeech({ text }).then(result => {
-        if(result.audioUrl) {
-            setAudioToPlay(result.audioUrl);
-        }
-    }).catch(error => {
-        console.error("Manual TTS failed:", error);
-    }).finally(() => {
-        setIsLoading(false);
-    });
-  }
-
-  // A simple TTS flow for replaying audio. Re-uses the main flow.
-  const textToSpeech = async ({text}: {text: string}) => {
-      const response = await fetch('/api/tts', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({text})
-      });
-      if(!response.ok) throw new Error("TTS API call failed");
-      return response.json();
-  }
 
   return (
     <motion.div
