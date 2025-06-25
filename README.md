@@ -15,11 +15,11 @@ This is a Next.js starter portfolio built in Firebase Studio. It features a mode
 
 ### 1. Set Up Environment Variables
 
-This project uses environment variables to securely store API keys and other sensitive information.
+This project uses environment variables to securely store API keys and other sensitive information. Your secrets should **never** be committed to Git.
 
-1.  **Create the file**: Make a copy of the `.env` file and name it `.env.local`:
+1.  **Create your local environment file**: Make a copy of the example file and name it `.env.local`:
     ```bash
-    cp .env .env.local
+    cp .env.example .env.local
     ```
 2.  **Fill in the values**: Open `.env.local` and replace the placeholder values with your actual credentials.
     -   `GOOGLE_API_KEY`: Get this from the Google AI Studio.
