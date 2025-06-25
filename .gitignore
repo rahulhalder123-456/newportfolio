@@ -8,15 +8,10 @@
 # Vercel deployment folder
 .vercel
 
-# Environment variables
-# Ignore all local environment files.
-.env.local
-.env.development.local
-.env.production.local
+# Ignore all .env files except .env.example
+.env*
+!.env.example
 
-# Also ignore the main .env file to prevent accidental commitment of secrets.
-# Use .env.example for template.
-.env
 
 # Log files
 npm-debug.log*
