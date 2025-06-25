@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A "GenZ" AI chatbot flow that provides text and voice responses.
@@ -5,7 +6,6 @@
  * - chatWithVibeBot - A function that handles the chat interaction.
  */
 import { ai } from '@/ai/genkit';
-import { geminiPro } from '@genkit-ai/googleai';
 import {
   ChatbotInputSchema,
   ChatbotOutputSchema,
@@ -29,8 +29,8 @@ const chatbotFlow = ai.defineFlow(
   },
   async (input) => {
     // 1. Get the text response from the AI
-    const { output: textResponse } = await ai.generate({
-      model: geminiPro,
+    const llmResponse = await ai.generate({
+      model: 'googleai/gemini-pro',
       prompt: `You are a super chill, helpful AI assistant with a GenZ personality. 
       Your name is 'VibeBot'. Keep your answers short, snappy, and use modern slang.
       Like, don't be basic. If a question is mid, just say so.
@@ -43,13 +43,10 @@ const chatbotFlow = ai.defineFlow(
       },
     });
 
-    if (!textResponse) {
-      return {
-        answer: "lowkey, my brain just short-circuited. try that again?",
-      };
-    }
+    const answer = llmResponse.text;
     
-    const answer = textResponse;
+    // An empty response from the LLM is valid. An error will throw an exception 
+    // which is handled by the frontend, so no need for an explicit check here.
 
     // 2. Generate audio for the response
     try {
