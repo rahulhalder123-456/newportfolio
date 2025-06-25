@@ -41,10 +41,17 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
         // Disable shadow casting on all parts of the model.
         meshChild.castShadow = false;
         meshChild.receiveShadow = false;
+        
+        // A targeted fix for the ape model's visual seam.
+        // We make the material less reflective to hide lighting artifacts on the seam.
+        if (path.includes('ape.glb') && (meshChild.material as THREE.MeshStandardMaterial).isMeshStandardMaterial) {
+          (meshChild.material as THREE.MeshStandardMaterial).roughness = 0.9;
+          (meshChild.material as THREE.MeshStandardMaterial).metalness = 0.1;
+        }
       }
     });
     return newScene;
-  }, [scene]);
+  }, [scene, path]);
 
   // useFrame is a hook that runs on every single rendered frame.
   // This is where we update the model's opacity for the animation.
@@ -63,11 +70,10 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
     });
   });
 
-  // FIX: Check if the current model is the ape to apply a specific rotation and scale.
-  // This combination of transforms is designed to hide a visual seam artifact in the original model file.
+  // A combination of rotation and scale to further obscure the seam on the ape model.
   const isApe = path.includes('ape.glb');
-  const rotationFix = isApe ? [0, 0.3, 0] : [0, 0, 0];
-  const scaleFix = isApe ? 1.15 : scale;
+  const rotationFix = isApe ? [0, 0.4, 0] : [0, 0, 0];
+  const scaleFix = isApe ? 1.2 : scale;
 
   return <primitive object={clonedScene} scale={scaleFix} rotation={rotationFix} position={[0, -1.5, 0]} />;
 }
@@ -110,10 +116,10 @@ export default function EvolutionScene() {
         </Suspense>
 
         {/* --- Lighting Setup --- */}
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={1} />
         <directionalLight 
           position={[5, 5, 5]} 
-          intensity={1.5} 
+          intensity={2} 
         />
         
         {/* Preload all assets for a smoother experience. */}
