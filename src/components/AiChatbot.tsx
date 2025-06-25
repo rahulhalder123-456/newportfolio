@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -100,20 +99,11 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       speak(result.answer);
 
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      console.error(`Chatbot failed: ${errorMessage}`);
-      
-      let botText = 'Oof, major L. My circuits are fried right now. Maybe try again later.';
-      if (errorMessage.includes('API key not valid')) {
-        botText = 'Yikes, my API key is invalid. The admin needs to check the .env file.';
-      } else if (errorMessage.toLowerCase().includes('quota')) {
-        botText = "Sheesh, I'm too popular. We've hit the usage limit for today. Try again tomorrow!";
-      }
-
+      console.error(`Chatbot failed: ${getErrorMessage(error)}`);
       const botMessage: Message = {
         id: Date.now() + 1,
         role: 'bot',
-        text: botText,
+        text: 'Oof, major L. My circuits are fried right now. Maybe try again later.',
       };
       setMessages((prev) => [...prev, botMessage]);
     } finally {
