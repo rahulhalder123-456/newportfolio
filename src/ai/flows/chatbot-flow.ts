@@ -61,7 +61,7 @@ const chatbotFlow = ai.defineFlow(
       return { answer, audioUrl: ttsResult.audioUrl };
     } catch (error) {
       console.error(`TTS generation failed: ${getErrorMessage(error)}`);
-      // Fail gracefully: still return the text answer even if audio fails
+      // Fail gracefully: still return the text answer if audio fails
       return { answer };
     }
   }
