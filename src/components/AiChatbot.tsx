@@ -24,7 +24,6 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [audioToPlay, setAudioToPlay] = useState<string | null>(null);
   
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -43,46 +42,27 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (audioToPlay) {
-      const audio = new Audio(audioToPlay);
-      const playPromise = audio.play();
-
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log("Audio playback started successfully.");
-          })
-          .catch((error) => {
-            console.error("Audio playback was prevented by the browser:", error);
-            // Autoplay was prevented. You could show a "Play" button here.
-          })
-          .finally(() => {
-            setAudioToPlay(null); // Clear the URL after attempting to play
-          });
-      } else {
-        // In some older browsers, play() doesn't return a promise.
-        setAudioToPlay(null);
-      }
-    }
-  }, [audioToPlay]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { id: Date.now(), role: 'user', text: input };
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      const result = await chatWithVibeBot({ query: input });
+      const result = await chatWithVibeBot({ query: currentInput });
       const botMessage: Message = { id: Date.now() + 1, role: 'bot', text: result.answer };
       setMessages((prev) => [...prev, botMessage]);
 
       if (result.audioUrl) {
-        setAudioToPlay(result.audioUrl);
+        const audio = new Audio(result.audioUrl);
+        audio.play().catch(error => {
+            console.error("Audio playback failed:", error);
+            // This can happen if the user hasn't interacted with the page yet.
+        });
       }
     } catch (error) {
       const errorMessage = getErrorMessage(error);
