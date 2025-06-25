@@ -17,15 +17,15 @@ function Particle({ originalPosition, mousePos }: { originalPosition: THREE.Vect
     
     // Repulsion logic
     const distance = target.distanceTo(mousePos.current);
-    const maxDistance = 2.5; // Repulsion radius
+    const maxDistance = 2.0; // Repulsion radius
     if (distance < maxDistance) {
-      const repulsionStrength = (1 - distance / maxDistance) * 1.5;
+      const repulsionStrength = (1 - distance / maxDistance) * 2.0; // Stronger push
       const direction = target.clone().sub(mousePos.current).normalize();
       target.add(direction.multiplyScalar(repulsionStrength));
     }
 
     // Smoothly move the particle to its target position (original + repulsion)
-    position.lerp(target, 0.05);
+    position.lerp(target, 0.08); // Snappier return
 
     if (ref.current) {
       ref.current.position.copy(position);
@@ -34,8 +34,8 @@ function Particle({ originalPosition, mousePos }: { originalPosition: THREE.Vect
 
   return (
     <mesh ref={ref} position={originalPosition}>
-      <sphereGeometry args={[0.03, 8, 8]} />
-      <meshStandardMaterial color="hsl(var(--primary))" emissive="hsl(var(--primary))" emissiveIntensity={0.6} roughness={0.2} />
+      <sphereGeometry args={[0.02, 8, 8]} />
+      <meshStandardMaterial color="hsl(var(--primary))" emissive="hsl(var(--primary))" emissiveIntensity={0.8} roughness={0.2} />
     </mesh>
   );
 }
@@ -63,21 +63,20 @@ function PointCloudFace() {
     const data = imageData.data;
     
     const sampledPoints: THREE.Vector3[] = [];
-    const samplingStep = 8; // Increase step to reduce particle count for performance
+    const samplingStep = 4; // Drastically increase particle density
     const scale = 5; // How large the face appears
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
       for (let x = 0; x < canvas.width; x += samplingStep) {
         const i = (y * canvas.width + x) * 4;
         const alpha = data[i + 3];
+        const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
 
-        // Only create points for non-transparent pixels
-        if (alpha > 128) {
+        // Only create points for non-transparent and non-dark pixels to focus on face
+        if (alpha > 128 && brightness > 40) {
           const posX = (x / canvas.width - 0.5) * scale;
           const posY = -(y / canvas.height - 0.5) * scale;
-          // Use brightness for a subtle depth effect
-          const brightness = (data[i] + data[i+1] + data[i+2]) / 3 / 255;
-          const posZ = (brightness - 0.5) * 0.5;
+          const posZ = (brightness / 255 - 0.5) * 0.7; // Use brightness for depth
           
           sampledPoints.push(new THREE.Vector3(posX, posY, posZ));
         }
@@ -91,7 +90,7 @@ function PointCloudFace() {
     if (particles.length === 0) return null;
 
     const connections: number[] = [];
-    const connectionDistance = 0.25; // How close particles need to be to connect
+    const connectionDistance = 0.2; // Adjusted for density
 
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
@@ -125,7 +124,7 @@ function PointCloudFace() {
       ))}
       {lineGeometry && (
         <lineSegments geometry={lineGeometry}>
-          <lineBasicMaterial color="hsl(var(--accent))" transparent opacity={0.2} />
+          <lineBasicMaterial color="hsl(var(--accent))" transparent opacity={0.15} />
         </lineSegments>
       )}
     </group>
