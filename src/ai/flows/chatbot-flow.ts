@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview A "GenZ" AI chatbot flow that provides text and voice responses.
+ * @fileOverview A "GenZ" AI chatbot flow that provides text responses.
  *
  * - chatWithVibeBot - A function that handles the chat interaction.
  */
@@ -13,8 +13,6 @@ import {
   type ChatbotInput,
   type ChatbotOutput,
 } from './chatbot.schema';
-import { textToSpeech } from './tts-flow';
-import { getErrorMessage } from '@/lib/utils';
 
 export async function chatWithVibeBot(
   input: ChatbotInput
@@ -46,7 +44,7 @@ const chatbotFlow = ai.defineFlow(
     outputSchema: ChatbotOutputSchema,
   },
   async (input) => {
-    // 1. Get the text response from the AI
+    // Get the text response from the AI
     const llmResponse = await genZPrompt(input);
     const answer = llmResponse.text;
 
@@ -55,14 +53,7 @@ const chatbotFlow = ai.defineFlow(
         return { answer: "lowkey, I got nothing. try again?" };
     }
 
-    // 2. Generate audio for the response
-    try {
-      const ttsResult = await textToSpeech({ text: answer });
-      return { answer, audioUrl: ttsResult.audioUrl };
-    } catch (error) {
-      console.error(`TTS generation failed: ${getErrorMessage(error)}`);
-      // Fail gracefully: still return the text answer if audio fails
-      return { answer };
-    }
+    // Just return the text answer
+    return { answer };
   }
 );

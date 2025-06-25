@@ -27,14 +27,13 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   const [isLoading, setIsLoading] = useState(false);
   
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const synthesisRef = useRef<SpeechSynthesis | null>(null);
 
   useEffect(() => {
-    // Create a persistent audio element instance. This is more reliable for playback.
     if (typeof window !== 'undefined') {
-      audioRef.current = new Audio();
+      synthesisRef.current = window.speechSynthesis;
     }
-    
+
     setMessages([
       { id: 1, role: 'bot', text: "Ayo, what's the tea? Ask me anything." }
     ]);
@@ -48,6 +47,27 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
         }
     }
   }, [messages]);
+  
+  const speak = (text: string) => {
+    const synthesis = synthesisRef.current;
+    if (!synthesis) return;
+    
+    synthesis.cancel(); // Stop any previous speech
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Simple voice selection - browsers handle this differently
+    const voices = synthesis.getVoices();
+    const preferredVoice = voices.find(voice => voice.lang.startsWith('en') && voice.name.toLowerCase().includes('female')) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    synthesis.speak(utterance);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,13 +83,8 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       const result = await chatWithVibeBot({ query: currentInput });
       const botMessage: Message = { id: Date.now() + 1, role: 'bot', text: result.answer };
       setMessages((prev) => [...prev, botMessage]);
+      speak(result.answer);
 
-      if (result.audioUrl && audioRef.current) {
-        audioRef.current.src = result.audioUrl;
-        audioRef.current.play().catch(error => {
-            console.error("Audio playback failed:", error);
-        });
-      }
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       console.error(`Chatbot failed: ${errorMessage}`);
@@ -106,7 +121,10 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
             <Bot className="h-6 w-6 text-primary animate-pulse" />
             <h3 className="font-bold text-lg text-primary">VibeBot</h3>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={() => {
+            if (synthesisRef.current) synthesisRef.current.cancel();
+            onClose();
+          }}>
             <X className="h-5 w-5" />
           </Button>
         </header>
