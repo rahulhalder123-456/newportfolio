@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -18,82 +19,38 @@ modelData.forEach(data => useGLTF.preload(data.path));
 function SingleModel({ path, scale, isActive }: { path: string, scale: number, isActive: boolean }) {
   const { scene } = useGLTF(path);
 
-  // useMemo is used here to ensure the uniform object is stable across re-renders
-  const uniforms = useMemo(() => ({
-    // uProgress controls the disintegration effect. 1.0 is fully invisible, 0.0 is fully visible.
-    uProgress: { value: 1.0 }, 
-  }), []);
+  // We clone the scene and its materials to ensure each model instance is unique and can be animated independently.
+  const clonedScene = useMemo(() => {
+    const newScene = scene.clone();
+    newScene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+            child.material = (child.material as THREE.Material).clone();
+        }
+    });
+    return newScene;
+  }, [scene]);
 
-  useEffect(() => {
-    // Traverse the scene graph of the loaded model
-    scene.traverse((child) => {
-      // We only care about meshes, as they are the visible parts of the model
-      if ((child as THREE.Mesh).isMesh) {
-        child.castShadow = true; // The model should cast shadows onto the ground plane
-        const originalMaterial = child.material as THREE.MeshStandardMaterial;
-
-        // The material must be transparent for the alpha fade-out to work
-        originalMaterial.transparent = true;
-        
-        // onBeforeCompile is a powerful hook to inject custom GLSL code into existing materials
-        originalMaterial.onBeforeCompile = (shader) => {
-          // 1. Pass our custom uniform into the shader
-          shader.uniforms.uProgress = uniforms.uProgress;
-
-          // 2. We need the UV coordinates in the fragment shader to create a random pattern for the disintegration
-          shader.vertexShader = 'varying vec2 vUv;\n' + shader.vertexShader;
-          shader.vertexShader = shader.vertexShader.replace(
-            '#include <common>',
-            '#include <common>\nvUv = uv;'
-          );
-
-          // 3. Inject the logic into the fragment shader
-          shader.fragmentShader = `
-            varying vec2 vUv;
-            uniform float uProgress;
-            // A simple pseudo-random number generator function in GLSL
-            float rand(vec2 n) { 
-                return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
-            }
-          ` + shader.fragmentShader;
-          
-          // We inject our code right before the final color is set.
-          // This ensures all lighting calculations are done before our effect is applied.
-          shader.fragmentShader = shader.fragmentShader.replace(
-            '#include <dithering_fragment>',
-            `
-            #include <dithering_fragment>
-
-            float random = rand(vUv * 2.0); // Use vUv to get a random value per pixel
-            
-            // Discard (make invisible) pixels based on the progress and the random value
-            if (random > (1.0 - uProgress)) {
-              discard;
-            }
-
-            // Also fade out the alpha of the remaining fragments for a smoother effect
-            gl_FragColor.a *= (1.0 - uProgress);
-            `
-          );
-        };
-        // This is crucial to tell Three.js that the material has been modified
-        originalMaterial.needsUpdate = true;
+  // This hook animates the opacity of the model for a smooth fade-in/fade-out effect.
+  useFrame((state, delta) => {
+    const targetOpacity = isActive ? 1.0 : 0.0;
+    
+    clonedScene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh && child.material instanceof THREE.MeshStandardMaterial) {
+          // Set material to be transparent
+          child.material.transparent = true;
+          // Animate the opacity value towards the target for a smooth transition
+          // lerp(current, target, speed)
+          child.material.opacity += (targetOpacity - child.material.opacity) * (delta * 5.0);
       }
     });
-  }, [scene, uniforms]);
-
-  // This useFrame hook runs on every rendered frame
-  useFrame((state, delta) => {
-    // Determine the target progress based on whether the model should be active or not
-    const targetProgress = isActive ? 0.0 : 1.0;
-    const currentProgress = uniforms.uProgress.value;
-    
-    // Animate the progress value towards the target for a smooth transition
-    // lerp(current, target, speed)
-    uniforms.uProgress.value += (targetProgress - currentProgress) * (delta * 4.0);
   });
 
-  return <primitive object={scene} scale={scale} position={[0, -1.5, 0]} />;
+  // Only render the model if its opacity is high enough to be seen.
+  // This is a small optimization.
+  const isVisible = (clonedScene.children[0] as THREE.Mesh)?.material?.opacity > 0.01;
+  if (!isVisible) return null;
+
+  return <primitive object={clonedScene} scale={scale} position={[0, -1.5, 0]} />;
 }
 
 
@@ -115,7 +72,7 @@ export default function EvolutionScene() {
       <Canvas camera={{ position: [0, 0.5, 7], fov: 50 }} shadows>
         {/* Suspense is required by React to handle components that load data asynchronously, like our models */}
         <Suspense fallback={null}>
-          {/* Environment provides ambient lighting and reflections. `apartment` is a good neutral preset. */}
+          {/* Environment provides excellent, realistic ambient lighting and reflections. */}
           <Environment preset="apartment" />
           
           {/* Map through the model data and render a component for each one */}
