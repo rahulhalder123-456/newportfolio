@@ -1,9 +1,8 @@
-
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Suspense, useState, useEffect, useRef, useMemo } from 'react';
-import { OrbitControls, useGLTF, Preload, Environment } from '@react-three/drei';
+import { useGLTF, Preload, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
 const modelData = [
@@ -15,72 +14,71 @@ const modelData = [
 
 modelData.forEach(data => useGLTF.preload(data.path));
 
-// The vertex shader simply passes the UV coordinates to the fragment shader.
-const vertexShader = `
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-
-// The fragment shader creates the disintegration effect.
-const fragmentShader = `
-  uniform float uProgress; // 0 = visible, 1 = disintegrated
-  uniform vec3 uColor;
-  varying vec2 vUv;
-
-  // A simple random function based on UV coordinates
-  float rand(vec2 n) { 
-    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
-  }
-
-  void main() {
-    float random = rand(vUv);
-    
-    // Discard fragments if their random value is greater than the current visibility
-    // As uProgress increases, (1.0 - uProgress) decreases, so more fragments are discarded.
-    if (random > (1.0 - uProgress)) {
-      discard;
-    }
-
-    // The overall opacity also fades out as the model disintegrates.
-    gl_FragColor = vec4(uColor, 1.0 - uProgress);
-  }
-`;
-
 function SingleModel({ path, scale, isActive }: { path: string, scale: number, isActive: boolean }) {
   const { scene } = useGLTF(path);
 
-  // Memoize the shader uniforms so they persist for the lifetime of the component
   const uniforms = useMemo(() => ({
     uProgress: { value: 1.0 }, // Start fully disintegrated (invisible)
-    uColor: { value: new THREE.Color('white') },
   }), []);
 
-  // When the scene is loaded, traverse it and apply our custom shader material to each mesh
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         child.castShadow = true;
-        child.material = new THREE.ShaderMaterial({
-          uniforms,
-          vertexShader,
-          fragmentShader,
-          transparent: true, // Enable transparency for the fade-out effect
-        });
+        const originalMaterial = child.material as THREE.MeshStandardMaterial;
+
+        // Make the material transparent to allow for fading
+        originalMaterial.transparent = true;
+        
+        // Use onBeforeCompile to inject custom shader logic into the existing material
+        originalMaterial.onBeforeCompile = (shader) => {
+          // 1. Add our custom uniform to the shader
+          shader.uniforms.uProgress = uniforms.uProgress;
+
+          // 2. Modify the vertex shader to pass the UV coordinates to the fragment shader
+          shader.vertexShader = 'varying vec2 vUv;\n' + shader.vertexShader;
+          shader.vertexShader = shader.vertexShader.replace(
+            '#include <common>',
+            '#include <common>\nvUv = uv;'
+          );
+
+          // 3. Modify the fragment shader to implement the disintegration effect
+          shader.fragmentShader = `
+            varying vec2 vUv;
+            uniform float uProgress;
+            float rand(vec2 n) { 
+                return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+            }
+          ` + shader.fragmentShader;
+          
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <dithering_fragment>',
+            `
+            #include <dithering_fragment>
+
+            float random = rand(vUv);
+            
+            // Discard fragments based on progress and a random value
+            if (random > (1.0 - uProgress)) {
+              discard;
+            }
+
+            // Also fade out the alpha of the remaining fragments
+            gl_FragColor.a *= (1.0 - uProgress);
+            `
+          );
+        };
+        // We need to tell Three.js that the material has been updated
+        originalMaterial.needsUpdate = true;
       }
     });
   }, [scene, uniforms]);
 
-  // Use the main render loop to animate the disintegration effect
   useFrame((state, delta) => {
-    // Determine the target progress based on whether the model should be active
     const targetProgress = isActive ? 0.0 : 1.0;
     const currentProgress = uniforms.uProgress.value;
     
-    // Smoothly interpolate the progress value towards the target, creating the animation
-    // The multiplication factor (delta * 5.0) controls the speed of the transition.
+    // Smoothly animate the progress value towards the target
     uniforms.uProgress.value += (targetProgress - currentProgress) * (delta * 5.0);
   });
 
@@ -91,7 +89,6 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
 export default function EvolutionScene() {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // This timer updates the active model index every 4 seconds, driving the animation cycle
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveIndex((current) => (current + 1) % modelData.length);
@@ -113,7 +110,6 @@ export default function EvolutionScene() {
               isActive={index === activeIndex} 
             />
           ))}
-          {/* A ground plane to receive shadows, adding depth to the scene */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
               <planeGeometry args={[100, 100]} />
               <shadowMaterial opacity={0.4} />
