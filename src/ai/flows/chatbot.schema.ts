@@ -5,6 +5,7 @@
  * - ChatbotInput - TypeScript type for chatbot input.
  * - ChatbotOutputSchema - Zod schema for chatbot output.
  * - ChatbotOutput - TypeScript type for chatbot output.
+ * - ChatbotPromptOutputSchema - Zod schema for the direct output of the AI prompt.
  */
 
 import {z} from 'zod';
@@ -23,7 +24,7 @@ export const ChatbotOutputSchema = z.object({
 });
 export type ChatbotOutput = z.infer<typeof ChatbotOutputSchema>;
 
-// This is the new schema for the direct output of the prompt itself.
+// This schema defines the expected structured output from the AI prompt.
 // Asking for a structured object is more reliable than a raw string.
 export const ChatbotPromptOutputSchema = z.object({
     answer: z.string().describe("The text of the AI's response to the user's question.")

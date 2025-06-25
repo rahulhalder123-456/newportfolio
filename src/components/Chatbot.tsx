@@ -42,7 +42,7 @@ export default function Chatbot() {
     }
   }, [messages]);
 
-  // Robust audio playback using useEffect
+  // Robust audio playback using a dedicated useEffect hook
   useEffect(() => {
     if (audioToPlay && isAudioEnabled) {
       const audio = new Audio(audioToPlay);
@@ -76,6 +76,7 @@ export default function Chatbot() {
         setMessages((prev) => [...prev, assistantMessage]);
 
         if (result.audioUrl) {
+          // Trigger the useEffect hook to play the audio
           setAudioToPlay(result.audioUrl);
         }
 

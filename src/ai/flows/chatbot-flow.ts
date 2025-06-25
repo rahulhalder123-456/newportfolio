@@ -75,7 +75,7 @@ const chatbotFlow = ai.defineFlow(
     const greetings = ['hi', 'hello', 'hey'];
     const normalizedQuestion = input.question.trim().toLowerCase();
 
-    // Handle simple greetings in code for reliability
+    // Handle simple greetings in code for reliability and speed
     if (greetings.includes(normalizedQuestion)) {
       answer = 'Greetings, operator.';
     } else {
@@ -124,7 +124,7 @@ const chatbotFlow = ai.defineFlow(
 
     } catch (error) {
       console.error(`TTS generation failed: ${getErrorMessage(error)}`);
-      // Return the text answer even if TTS fails
+      // Return the text answer even if TTS fails, so the chat doesn't break.
       return {answer};
     }
   }
