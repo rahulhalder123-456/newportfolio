@@ -1,8 +1,8 @@
 
 'use client';
 
-import React, { useRef, useMemo, useState, useEffect } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import React, { useRef, useMemo } from 'react';
+import { Canvas, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import { type Mesh, type PointLight } from 'three';
 
@@ -56,68 +56,73 @@ function Particle({ originalPosition, mousePos }: { originalPosition: THREE.Vect
 }
 
 function PointCloudFace() {
-  const [particles, setParticles] = useState<THREE.Vector3[]>([]);
   const texture = useLoader(THREE.TextureLoader, '/mine.png');
-  const groupRef = useRef<THREE.Group>(null!);
   const lightRef = useRef<PointLight>(null!);
   const mousePos = useRef(new THREE.Vector3(10000, 10000, 10000));
 
-  useEffect(() => {
-    if (!texture) return;
+  const { particles, lineGeometry } = useMemo(() => {
+    const data = {
+        particles: [] as THREE.Vector3[],
+        lineGeometry: null as THREE.BufferGeometry | null,
+    };
+    if (!texture) return data;
+
     const img = texture.image;
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
+    if (!ctx) return data;
 
     ctx.drawImage(img, 0, 0);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    const sampledPoints: THREE.Vector3[] = [];
-    const samplingStep = 4; // Denser sampling
+    const pixelData = imageData.data;
+    const connections: number[] = [];
+    const pointGrid: (THREE.Vector3 | null)[][] = [];
+
+    const samplingStep = 4;
     const scale = 5;
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
-      for (let x = 0; x < canvas.width; x += samplingStep) {
-        const i = (y * canvas.width + x) * 4;
-        const alpha = data[i + 3];
-        const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
+        if (!pointGrid[y]) pointGrid[y] = [];
+        for (let x = 0; x < canvas.width; x += samplingStep) {
+            const i = (y * canvas.width + x) * 4;
+            const alpha = pixelData[i + 3];
+            const brightness = (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 3;
 
-        if (alpha > 128 && brightness > 60) {
-          const posX = (x / canvas.width - 0.5) * scale;
-          const posY = -(y / canvas.height - 0.5) * scale;
-          const posZ = (brightness / 255 - 0.5) * 0.5;
-          sampledPoints.push(new THREE.Vector3(posX, posY, posZ));
+            if (alpha > 128 && brightness > 60) {
+                const posX = (x / canvas.width - 0.5) * scale;
+                const posY = -(y / canvas.height - 0.5) * scale;
+                const posZ = (brightness / 255 - 0.5) * 0.5;
+                const newPoint = new THREE.Vector3(posX, posY, posZ);
+                data.particles.push(newPoint);
+                pointGrid[y][x] = newPoint;
+
+                // Connect to the point to the left
+                if (x >= samplingStep && pointGrid[y]?.[x - samplingStep]) {
+                    connections.push(...newPoint.toArray(), ...pointGrid[y][x - samplingStep]!.toArray());
+                }
+                // Connect to the point above
+                if (y >= samplingStep && pointGrid[y - samplingStep]?.[x]) {
+                    connections.push(...newPoint.toArray(), ...pointGrid[y - samplingStep][x]!.toArray());
+                }
+            }
         }
-      }
     }
-    setParticles(sampledPoints);
-  }, [texture]);
 
-  const lineGeometry = useMemo(() => {
-    if (particles.length === 0) return null;
-    const connections: number[] = [];
-    const connectionDistance = 0.18;
-
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        if (particles[i].distanceTo(particles[j]) < connectionDistance) {
-          connections.push(...particles[i].toArray(), ...particles[j].toArray());
-        }
-      }
-    }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(connections, 3));
-    return geometry;
-  }, [particles]);
+    data.lineGeometry = geometry;
+
+    return data;
+  }, [texture]);
+
 
   useFrame((state) => {
     const { pointer, viewport } = state;
     const targetMouseX = (pointer.x * viewport.width) / 2;
     const targetMouseY = (pointer.y * viewport.height) / 2;
 
-    // Smoothly update mouse position
     mousePos.current.lerp(new THREE.Vector3(targetMouseX, targetMouseY, 1), 0.1);
     
     if (lightRef.current) {
@@ -128,7 +133,7 @@ function PointCloudFace() {
   return (
     <>
       <pointLight ref={lightRef} intensity={4} color="hsl(var(--accent))" distance={4} />
-      <group ref={groupRef}>
+      <group>
         {particles.map((pos, i) => (
           <Particle key={i} originalPosition={pos} mousePos={mousePos} />
         ))}
