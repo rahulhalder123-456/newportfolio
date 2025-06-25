@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useRef, useMemo } from 'react';
@@ -44,7 +45,7 @@ function PointCloudFace() {
     const pointGrid: (THREE.Vector3 | null)[][] = [];
 
     const particles: THREE.Vector3[] = [];
-    const scale = 3; // Changed from 4 to make the face smaller and more centered.
+    const scale = 3; // Adjusted for a balanced size.
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
       pointGrid[y] = [];
