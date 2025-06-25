@@ -27,18 +27,11 @@ const generateProjectImageFlow = ai.defineFlow(
   async (input) => {
     const { media } = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `Generate a visually stunning, abstract image for a software project.
-
-Theme: High-tech, futuristic, digital.
-Style: Sleek, modern, with glowing abstract shapes and data patterns.
-Color Palette: Dark background (dark gray, deep blue) with vibrant accents of electric purple and teal.
-Aspect Ratio: 3:2 landscape (600x400).
-Do not include any text or logos.
-
-Project Title: "${input.title}"
-Project Summary: "${input.summary}"
-
-The image should be a unique visual metaphor for the project, inspired by the title and summary.`,
+      prompt: `An abstract, high-tech image for a software project.
+Title: "${input.title}"
+Summary: "${input.summary}"
+Style: Futuristic, digital art, glowing lines, dark background with electric purple and teal accents.
+Aspect ratio: 3:2 landscape. No text.`,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
