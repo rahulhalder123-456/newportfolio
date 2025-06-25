@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -5,68 +6,59 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { OrbitControls, useGLTF, Stage, Preload } from '@react-three/drei';
 import * as THREE from 'three';
 
-const modelPaths = [
-  '/models/ape.glb',
-  '/models/homo_erectus.glb',
-  '/models/modern_human.glb',
-  '/models/cyborg.glb'
+// Define model data with custom scales for each
+const modelData = [
+  { path: '/models/ape.glb', scale: 1.0 },
+  { path: '/models/homo_erectus.glb', scale: 1.5 },
+  { path: '/models/modern_human.glb', scale: 1.5 },
+  { path: '/models/cyborg.glb', scale: 2.0 },
 ];
 
-// Preload all models to prevent loading flashes between transitions
-modelPaths.forEach(useGLTF.preload);
+// Preload all models
+modelData.forEach(data => useGLTF.preload(data.path));
 
-/**
- * A component that loads a single GLB model and controls its visibility
- * with a smooth fade effect.
- */
-function SingleModel({ path, isActive }: { path: string, isActive: boolean }) {
+function SingleModel({ path, scale, isActive }: { path: string, scale: number, isActive: boolean }) {
   const { scene } = useGLTF(path);
   const groupRef = useRef<THREE.Group>(null!);
 
-  // This effect runs once when the model is loaded.
-  // It traverses the model's meshes and sets their materials to be transparent,
-  // which is required for the opacity animation to work.
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
+        // Ensure material is transparent for fade effect
         child.material.transparent = true;
+        child.material.needsUpdate = true;
       }
     });
   }, [scene]);
 
-  // This hook runs on every frame, animating the model's opacity.
   useFrame(() => {
     if (!groupRef.current) return;
     
-    // The target opacity is 1 if the model is active, and 0 otherwise.
     const targetOpacity = isActive ? 1 : 0;
 
-    // We loop through each mesh in the loaded model.
     groupRef.current.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
-        // We use linear interpolation (lerp) to smoothly animate the opacity
-        // from its current value towards the target value.
-        child.material.opacity += (targetOpacity - child.material.opacity) * 0.05;
+        const material = child.material as THREE.MeshStandardMaterial;
+        // Smoothly interpolate opacity
+        material.opacity += (targetOpacity - material.opacity) * 0.05;
       }
     });
   });
 
-  // We render the model using the <primitive> element from react-three-fiber.
-  return <primitive object={scene} ref={groupRef} scale={1.5} position={[0, -0.5, 0]} />;
+  // Use the scale prop passed from modelData
+  return <primitive object={scene} ref={groupRef} scale={scale} position={[0, -0.5, 0]} />;
 }
 
 
 export default function EvolutionScene() {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // This effect sets up an interval to cycle through the models.
   useEffect(() => {
     const interval = setInterval(() => {
-      // Move to the next model in the array, looping back to the start.
-      setActiveIndex((current) => (current + 1) % modelPaths.length);
+      // Cycle through the models
+      setActiveIndex((current) => (current + 1) % modelData.length);
     }, 4000); // Change model every 4 seconds
 
-    // Clean up the interval when the component unmounts.
     return () => clearInterval(interval);
   }, []);
 
@@ -80,9 +72,14 @@ export default function EvolutionScene() {
             adjustCamera={false} 
             shadows={{ type: 'contact', opacity: 0.3, blur: 2 }}
           >
-            {/* We render a SingleModel component for each path. The isActive prop controls which one is visible. */}
-            {modelPaths.map((path, index) => (
-              <SingleModel key={path} path={path} isActive={index === activeIndex} />
+            {/* Map over modelData and pass the scale to each SingleModel */}
+            {modelData.map((data, index) => (
+              <SingleModel 
+                key={data.path} 
+                path={data.path} 
+                scale={data.scale}
+                isActive={index === activeIndex} 
+              />
             ))}
           </Stage>
         </Suspense>
