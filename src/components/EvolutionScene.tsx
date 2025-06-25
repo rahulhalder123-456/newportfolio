@@ -5,20 +5,28 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Sphere, Box, Cylinder, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
-// --- Reusable Materials ---
-const skinMaterial = new THREE.MeshStandardMaterial({ color: 'hsl(var(--primary))', roughness: 0.8, transparent: true });
+const skinMaterial = new THREE.MeshStandardMaterial({ color: '#f0c5a1', roughness: 0.8, transparent: true });
+const darkFurMaterial = new THREE.MeshStandardMaterial({ color: '#3a302d', roughness: 0.9, transparent: true });
 const metalMaterial = new THREE.MeshStandardMaterial({ color: '#888', roughness: 0.2, metalness: 0.9, transparent: true });
 const eyeMaterial = new THREE.MeshStandardMaterial({ color: 'hsl(var(--accent))', emissive: 'hsl(var(--accent))', emissiveIntensity: 3, transparent: true });
+const clothMaterial = new THREE.MeshStandardMaterial({ color: '#6d5d4b', roughness: 1, transparent: true });
 
 // --- Stage 1: Ape ---
 const Ape = React.forwardRef((props, ref: any) => (
   <group {...props} ref={ref}>
-    <Box position={[0, -0.1, 0]} args={[1.2, 1, 1.2]} material={skinMaterial} castShadow />
-    <Sphere position={[0, 1.1, 0.2]} args={[0.6, 16, 16]} material={skinMaterial} castShadow />
-    <Cylinder position={[-0.9, 0.2, 0]} args={[0.15, 0.15, 1.4, 8]} rotation={[0, 0, 0.9]} material={skinMaterial} castShadow />
-    <Cylinder position={[0.9, 0.2, 0]} args={[0.15, 0.15, 1.4, 8]} rotation={[0, 0, -0.9]} material={skinMaterial} castShadow />
-    <Cylinder position={[-0.4, -1.3, 0]} args={[0.15, 0.15, 1.2, 8]} rotation={[0, 0, 0.2]} material={skinMaterial} castShadow />
-    <Cylinder position={[0.4, -1.3, 0]} args={[0.15, 0.15, 1.2, 8]} rotation={[0, 0, -0.2]} material={skinMaterial} castShadow />
+    <group position={[0, -0.2, 0]}>
+        {/* Torso */}
+        <Sphere position={[0, 0.5, 0]} args={[0.9, 16, 12]} material={darkFurMaterial} castShadow />
+        {/* Head */}
+        <Sphere position={[0, 1.5, 0.1]} args={[0.6, 16, 16]} material={darkFurMaterial} castShadow />
+        <Sphere position={[0, 1.4, 0.6]} args={[0.2, 16, 16]} material={skinMaterial} castShadow /> 
+        {/* Arms */}
+        <Cylinder position={[-1.2, 0.4, -0.1]} args={[0.2, 0.2, 1.8, 8]} rotation={[0.4, 0, 0.9]} material={darkFurMaterial} castShadow />
+        <Cylinder position={[1.2, 0.4, -0.1]} args={[0.2, 0.2, 1.8, 8]} rotation={[0.4, 0, -0.9]} material={darkFurMaterial} castShadow />
+        {/* Legs */}
+        <Cylinder position={[-0.5, -0.8, 0]} args={[0.25, 0.2, 1.4, 8]} rotation={[0, 0, -0.5]} material={darkFurMaterial} castShadow />
+        <Cylinder position={[0.5, -0.8, 0]} args={[0.25, 0.2, 1.4, 8]} rotation={[0, 0, 0.5]} material={darkFurMaterial} castShadow />
+    </group>
   </group>
 ));
 Ape.displayName = "Ape";
@@ -26,13 +34,22 @@ Ape.displayName = "Ape";
 // --- Stage 2: Homo Erectus (Caveman) ---
 const HomoErectus = React.forwardRef((props, ref: any) => (
   <group {...props} ref={ref}>
-    <Box position={[0, 0.25, 0]} args={[1.1, 1.1, 0.9]} material={skinMaterial} castShadow />
-    <Sphere position={[0, 1.4, 0]} args={[0.5, 16, 16]} material={skinMaterial} castShadow />
-    <Cylinder position={[-0.8, 0.6, 0]} args={[0.15, 0.15, 1.2, 8]} rotation={[0, 0, 0.4]} material={skinMaterial} castShadow />
-    <Cylinder position={[0.8, 0.6, 0]} args={[0.15, 0.15, 1.2, 8]} rotation={[0, 0, -0.2]} material={skinMaterial} castShadow />
-    <Cylinder position={[-0.3, -1.1, 0]} args={[0.15, 0.15, 1.2, 8]} material={skinMaterial} castShadow />
-    <Cylinder position={[0.3, -1.1, 0]} args={[0.15, 0.15, 1.2, 8]} material={skinMaterial} castShadow />
-    <Cylinder args={[0.2, 0.3, 2, 6]} position={[1.4, -0.5, 0.5]} rotation={[0, 0, -0.8]} material={skinMaterial} />
+    <group position={[0, 0.5, 0]}>
+        {/* Torso */}
+        <Box position={[0, 0, 0]} args={[1.2, 1.6, 0.8]} material={skinMaterial} castShadow />
+        <Box position={[0, -0.1, 0]} args={[1.3, 0.6, 0.9]} material={clothMaterial} />
+        {/* Head */}
+        <Sphere position={[0, 1.3, 0]} args={[0.5, 16, 16]} material={skinMaterial} castShadow />
+        {/* Arms */}
+        <Cylinder position={[-1, 0.4, 0]} args={[0.18, 0.15, 1.5, 8]} rotation={[0, 0, 0.3]} material={skinMaterial} castShadow />
+        <Cylinder position={[1, 0.4, 0]} args={[0.18, 0.15, 1.5, 8]} rotation={[0, 0, -0.3]} material={skinMaterial} castShadow />
+        {/* Legs */}
+        <Cylinder position={[-0.4, -1.4, 0]} args={[0.2, 0.18, 1.2, 8]} material={skinMaterial} castShadow />
+        <Cylinder position={[0.4, -1.4, 0]} args={[0.2, 0.18, 1.2, 8]} material={skinMaterial} castShadow />
+        {/* Spear */}
+        <Cylinder args={[0.05, 0.05, 3, 6]} position={[1.2, 0, 0.5]} rotation={[1, 0, -0.5]} material={clothMaterial} />
+        <Cylinder args={[0.1, 0, 0.3, 4]} position={[1.8, 1.1, -0.1]} rotation={[1, 0, -0.5]} material={metalMaterial} />
+    </group>
   </group>
 ));
 HomoErectus.displayName = "HomoErectus";
@@ -40,12 +57,18 @@ HomoErectus.displayName = "HomoErectus";
 // --- Stage 3: Modern Human ---
 const Human = React.forwardRef((props, ref: any) => (
   <group {...props} ref={ref}>
-    <Box position={[0, 0.5, 0]} args={[1, 1.5, 0.5]} material={skinMaterial} castShadow />
-    <Sphere position={[0, 1.6, 0]} args={[0.6, 16, 16]} material={skinMaterial} castShadow />
-    <Cylinder position={[-0.7, 0.8, 0]} args={[0.15, 0.15, 1.2, 8]} material={skinMaterial} castShadow />
-    <Cylinder position={[0.7, 0.8, 0]} args={[0.15, 0.15, 1.2, 8]} material={skinMaterial} castShadow />
-    <Cylinder position={[-0.3, -0.8, 0]} args={[0.15, 0.15, 1.2, 8]} material={skinMaterial} castShadow />
-    <Cylinder position={[0.3, -0.8, 0]} args={[0.15, 0.15, 1.2, 8]} material={skinMaterial} castShadow />
+    <group position={[0, 0.8, 0]}>
+        {/* Torso */}
+        <Box position={[0, 0, 0]} args={[1, 1.8, 0.6]} material={clothMaterial} castShadow />
+        {/* Head */}
+        <Sphere position={[0, 1.5, 0]} args={[0.5, 24, 24]} material={skinMaterial} castShadow />
+        {/* Arms */}
+        <Cylinder position={[-0.8, 0.5, 0]} args={[0.15, 0.12, 1.8, 8]} rotation={[0, 0, 0.1]} material={skinMaterial} castShadow />
+        <Cylinder position={[0.8, 0.5, 0]} args={[0.15, 0.12, 1.8, 8]} rotation={[0, 0, -0.1]} material={skinMaterial} castShadow />
+        {/* Legs */}
+        <Cylinder position={[-0.3, -1.5, 0]} args={[0.18, 0.15, 1.5, 8]} material={clothMaterial} castShadow />
+        <Cylinder position={[0.3, -1.5, 0]} args={[0.18, 0.15, 1.5, 8]} material={clothMaterial} castShadow />
+    </group>
   </group>
 ));
 Human.displayName = "Human";
@@ -53,29 +76,31 @@ Human.displayName = "Human";
 // --- Stage 4: Cyborg ---
 const Cyborg = React.forwardRef((props, ref: any) => (
   <group {...props} ref={ref}>
-    <Box position={[0, 0.5, 0]} args={[1, 1.5, 0.5]} material={skinMaterial} castShadow />
-    <Sphere position={[0, 1.6, 0]} args={[0.6, 16, 16]} material={skinMaterial} castShadow />
-    <Cylinder position={[-0.7, 0.8, 0]} args={[0.15, 0.15, 1.2, 8]} material={metalMaterial} castShadow />
-    <Cylinder position={[0.7, 0.8, 0]} args={[0.15, 0.15, 1.2, 8]} material={skinMaterial} castShadow />
-    <Cylinder position={[-0.3, -0.8, 0]} args={[0.15, 0.15, 1.2, 8]} material={metalMaterial} castShadow />
-    <Cylinder position={[0.3, -0.8, 0]} args={[0.15, 0.15, 1.2, 8]} material={skinMaterial} castShadow />
-    <Sphere position={[-0.2, 1.7, 0.55]} args={[0.1, 8, 8]} material={eyeMaterial} />
+     <group position={[0, 0.8, 0]}>
+        {/* Torso */}
+        <Box position={[0, 0, 0]} args={[1, 1.8, 0.6]} material={clothMaterial} castShadow />
+        {/* Head */}
+        <Sphere position={[0, 1.5, 0]} args={[0.5, 24, 24]} material={skinMaterial} castShadow />
+        {/* Cybernetic Eye */}
+        <Sphere position={[0.2, 1.6, 0.45]} args={[0.1, 16, 16]} material={eyeMaterial} />
+        {/* Arms (one robotic) */}
+        <Cylinder position={[-0.8, 0.5, 0]} args={[0.15, 0.12, 1.8, 8]} rotation={[0, 0, 0.1]} material={metalMaterial} castShadow />
+        <Cylinder position={[0.8, 0.5, 0]} args={[0.15, 0.12, 1.8, 8]} rotation={[0, 0, -0.1]} material={skinMaterial} castShadow />
+        {/* Legs (one robotic) */}
+        <Cylinder position={[-0.3, -1.5, 0]} args={[0.18, 0.15, 1.5, 8]} material={clothMaterial} castShadow />
+        <Cylinder position={[0.3, -1.5, 0]} args={[0.18, 0.15, 1.5, 8]} material={metalMaterial} castShadow />
+     </group>
   </group>
 ));
 Cyborg.displayName = "Cyborg";
 
 // --- Component to manage the animation cycle ---
 const AnimatedEvolution = () => {
-    const apeRef = useRef<THREE.Group>(null!);
-    const homoErectusRef = useRef<THREE.Group>(null!);
-    const humanRef = useRef<THREE.Group>(null!);
-    const cyborgRef = useRef<THREE.Group>(null!);
-
     const modelRefs = useMemo(() => [
-        apeRef,
-        homoErectusRef,
-        humanRef,
-        cyborgRef,
+        React.createRef<THREE.Group>(),
+        React.createRef<THREE.Group>(),
+        React.createRef<THREE.Group>(),
+        React.createRef<THREE.Group>(),
     ], []);
 
     useFrame((state) => {
@@ -92,8 +117,8 @@ const AnimatedEvolution = () => {
             const modelEndTime = modelStartTime + cycleDuration;
             
             let opacity = 0;
-            const fadeInDuration = 0.25; // as a fraction of cycleDuration
-            const fadeOutStartTime = 0.75; // as a fraction of cycleDuration
+            const fadeInDuration = 0.25; 
+            const fadeOutStartTime = 0.75;
             
             if (timeInCycle >= modelStartTime && timeInCycle < modelEndTime) {
               const progress = (timeInCycle - modelStartTime) / cycleDuration;
@@ -118,10 +143,10 @@ const AnimatedEvolution = () => {
 
     return (
         <>
-            <Ape ref={apeRef} />
-            <HomoErectus ref={homoErectusRef} />
-            <Human ref={humanRef} />
-            <Cyborg ref={cyborgRef} />
+            <Ape ref={modelRefs[0]} />
+            <HomoErectus ref={modelRefs[1]} />
+            <Human ref={modelRefs[2]} />
+            <Cyborg ref={modelRefs[3]} />
         </>
     );
 };
