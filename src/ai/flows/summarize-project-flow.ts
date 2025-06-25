@@ -27,13 +27,21 @@ const generateProjectImageFlow = ai.defineFlow(
   async (input) => {
     const { media } = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `Generate a visually stunning and abstract image that represents a software project.
-The image must have an exact resolution of 600x400 pixels (a 3:2 landscape aspect ratio).
-The image should be suitable for a dark-themed developer portfolio, with a cyberpunk or futuristic aesthetic.
-Use a dark color palette with vibrant accents of purple, teal, and magenta.
-The image should be compelling and abstract, not a literal representation.
-Project Title: "${input.title}"
-Project Summary: "${input.summary}"`,
+      prompt: `You are a visionary digital artist specializing in creating concept art for high-tech software and futuristic interfaces. Your task is to generate a visually stunning and sophisticated image that represents a software project based on its title and summary.
+
+**Instructions:**
+1.  **Theme:** The image must evoke a sense of advanced technology, data intelligence, and digital craftsmanship. Think cyberpunk, futuristic, and sleek aesthetics.
+2.  **Visual Elements:** Incorporate abstract representations of code, data streams, glowing circuit patterns, or neural network structures. The image should feel like a glimpse into a complex digital world. It should be abstract but clearly related to technology.
+3.  **Color Palette:** Adhere to a dark, modern theme. The background should be dark (deep blues, blacks, or dark grays). Use vibrant, luminous accents of electric purple, cyan, and magenta to create contrast and energy.
+4.  **Composition:** Create a dynamic and balanced composition with a clear focal point. Employ depth of field to create a sense of scale and immersion. The image should be cinematic and polished, suitable for a professional portfolio.
+5.  **Resolution:** The final image MUST have an exact resolution of 600x400 pixels (a 3:2 landscape aspect ratio).
+6.  **Project Context:** Use the project's title and summary to inspire the specific shapes, colors, and flow of the visual elements. The image should feel like a unique visual metaphor for the project itself, not a generic tech background.
+
+**Project Details:**
+- **Title:** "${input.title}"
+- **Summary:** "${input.summary}"
+
+Generate a compelling, high-fidelity image that captures the essence of this project.`,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
