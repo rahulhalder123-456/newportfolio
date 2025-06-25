@@ -4,81 +4,79 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
-import { type Mesh } from 'three';
+import { type Mesh, type PointLight } from 'three';
 
-// A single particle (dot) in the face point cloud
 function Particle({ originalPosition, mousePos }: { originalPosition: THREE.Vector3, mousePos: React.MutableRefObject<THREE.Vector3> }) {
   const ref = useRef<Mesh>(null!);
   const position = useMemo(() => originalPosition.clone(), [originalPosition]);
 
-  // Pre-calculate colors for performance
   const originalColor = useMemo(() => new THREE.Color("hsl(var(--primary))"), []);
   const hoverColor = useMemo(() => new THREE.Color("hsl(var(--accent))"), []);
 
-
-  useFrame((state, delta) => {
+  useFrame(() => {
     if (!ref.current) return;
 
-    // This is the target position
     const target = originalPosition.clone();
-    
-    // Repulsion logic
     const distanceToMouse = target.distanceTo(mousePos.current);
-    const repulsionRadius = 1.5;
+    const repulsionRadius = 1.2;
+
     if (distanceToMouse < repulsionRadius) {
-      const repulsionStrength = (1 - distanceToMouse / repulsionRadius) * 3;
+      const repulsionStrength = (1 - distanceToMouse / repulsionRadius) * 2.5;
       const direction = target.clone().sub(mousePos.current).normalize();
       target.add(direction.multiplyScalar(repulsionStrength));
     }
 
-    // Smoothly move the particle to its target position (original + repulsion)
-    position.lerp(target, 0.08);
+    position.lerp(target, 0.1);
     ref.current.position.copy(position);
 
-    // Color change on hover
-    const colorRadius = 1.0;
-    const materialColor = (ref.current.material as THREE.MeshStandardMaterial).color;
-    
+    const material = ref.current.material as THREE.MeshStandardMaterial;
+    const colorRadius = 0.8;
+
     if (distanceToMouse < colorRadius) {
-        materialColor.lerp(hoverColor, 0.1);
+      material.emissive.lerp(hoverColor, 0.2);
+      material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity, 2.0, 0.2);
     } else {
-        materialColor.lerp(originalColor, 0.1);
+      material.emissive.lerp(originalColor, 0.15);
+      material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity, 0.5, 0.15);
     }
   });
 
   return (
     <mesh ref={ref} position={originalPosition}>
-      <sphereGeometry args={[0.025, 8, 8]} />
-      <meshStandardMaterial color={originalColor} emissive="hsl(var(--primary))" emissiveIntensity={0.8} roughness={0.2} />
+      <sphereGeometry args={[0.02, 8, 8]} />
+      <meshStandardMaterial
+        color={originalColor}
+        emissive={originalColor}
+        emissiveIntensity={0.5}
+        roughness={0.5}
+        metalness={0.1}
+      />
     </mesh>
   );
 }
 
-// The main component that orchestrates the scene
 function PointCloudFace() {
   const [particles, setParticles] = useState<THREE.Vector3[]>([]);
   const texture = useLoader(THREE.TextureLoader, '/mine.png');
   const groupRef = useRef<THREE.Group>(null!);
-  const mousePos = useRef(new THREE.Vector3(10000, 10000, 10000)); // Start mouse way off screen
+  const lightRef = useRef<PointLight>(null!);
+  const mousePos = useRef(new THREE.Vector3(10000, 10000, 10000));
 
-  // This effect runs once to sample the image and create particle positions
   useEffect(() => {
     if (!texture) return;
-
     const img = texture.image;
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
-    
+
     ctx.drawImage(img, 0, 0);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
-    
     const sampledPoints: THREE.Vector3[] = [];
-    const samplingStep = 5; // Use a larger step for fewer, more spaced out dots
-    const scale = 5; // How large the face appears
+    const samplingStep = 4; // Denser sampling
+    const scale = 5;
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
       for (let x = 0; x < canvas.width; x += samplingStep) {
@@ -86,12 +84,10 @@ function PointCloudFace() {
         const alpha = data[i + 3];
         const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
 
-        // Only create points for non-transparent and brighter pixels
-        if (alpha > 128 && brightness > 50) {
+        if (alpha > 128 && brightness > 60) {
           const posX = (x / canvas.width - 0.5) * scale;
           const posY = -(y / canvas.height - 0.5) * scale;
-          const posZ = (brightness / 255 - 0.5) * 0.7; // Use brightness for depth
-          
+          const posZ = (brightness / 255 - 0.5) * 0.5;
           sampledPoints.push(new THREE.Vector3(posX, posY, posZ));
         }
       }
@@ -99,46 +95,53 @@ function PointCloudFace() {
     setParticles(sampledPoints);
   }, [texture]);
 
-  // Create the connecting lines geometry, runs only when particles change
   const lineGeometry = useMemo(() => {
     if (particles.length === 0) return null;
-
     const connections: number[] = [];
-    const connectionDistance = 0.22; // Adjusted for new dot density
+    const connectionDistance = 0.18;
 
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
-        const dist = particles[i].distanceTo(particles[j]);
-        if (dist < connectionDistance) {
+        if (particles[i].distanceTo(particles[j]) < connectionDistance) {
           connections.push(...particles[i].toArray(), ...particles[j].toArray());
         }
       }
     }
-
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(connections, 3));
     return geometry;
   }, [particles]);
 
-  // Update mouse position and remove auto-rotation
-  useFrame((state) => {
-    // Map mouse screen coords to 3D world coords
+  useFrame((state, delta) => {
     const { pointer, viewport } = state;
-    mousePos.current.x = (pointer.x * viewport.width) / 2;
-    mousePos.current.y = (pointer.y * viewport.height) / 2;
+    const targetMouseX = (pointer.x * viewport.width) / 2;
+    const targetMouseY = (pointer.y * viewport.height) / 2;
+
+    // Smoothly update mouse position
+    mousePos.current.lerp(new THREE.Vector3(targetMouseX, targetMouseY, 1), 0.1);
+    
+    if (lightRef.current) {
+        lightRef.current.position.lerp(new THREE.Vector3(targetMouseX, targetMouseY, 2), 0.1);
+    }
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.05; // Add back very slow rotation for a "live" feel
+    }
   });
 
   return (
-    <group ref={groupRef}>
-      {particles.map((pos, i) => (
-        <Particle key={i} originalPosition={pos} mousePos={mousePos} />
-      ))}
-      {lineGeometry && (
-        <lineSegments geometry={lineGeometry}>
-          <lineBasicMaterial color="hsl(var(--accent))" transparent opacity={0.15} />
-        </lineSegments>
-      )}
-    </group>
+    <>
+      <pointLight ref={lightRef} intensity={4} color="hsl(var(--accent))" distance={4} />
+      <group ref={groupRef}>
+        {particles.map((pos, i) => (
+          <Particle key={i} originalPosition={pos} mousePos={mousePos} />
+        ))}
+        {lineGeometry && (
+          <lineSegments geometry={lineGeometry}>
+            <lineBasicMaterial color="hsl(var(--accent))" transparent opacity={0.1} />
+          </lineSegments>
+        )}
+      </group>
+    </>
   );
 }
 
@@ -149,9 +152,8 @@ export default function FacePlexus() {
     
     return (
         <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-auto opacity-50">
-            <Canvas camera={{ position: [0, 0, 4], fov: 75 }}>
-                <ambientLight intensity={1} />
-                <pointLight position={[0, 0, 5]} intensity={5} color="hsl(var(--primary))" />
+            <Canvas camera={{ position: [0, 0, 4.5], fov: 75 }}>
+                <ambientLight intensity={0.5} color="hsl(var(--primary))" />
                 <React.Suspense fallback={null}>
                     <PointCloudFace />
                 </React.Suspense>
