@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { chatWithVibeBot } from '@/ai/flows/chatbot-flow';
 import { getErrorMessage } from '@/lib/utils';
 import { cn } from '@/lib/utils';
-import PlexusAnimation from './PlexusAnimation';
+import FacePlexus from './FacePlexus';
 
 type Message = {
   id: number;
@@ -138,7 +138,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
     >
       <div className="relative flex flex-col h-full rounded-lg border border-primary/20 shadow-2xl shadow-primary/20 font-code overflow-hidden">
         
-        <PlexusAnimation />
+        <FacePlexus />
 
         <header className="relative z-10 flex items-center justify-between p-3 border-b border-primary/20 bg-background/50 backdrop-blur-sm">
           <div className="flex items-center gap-2">
