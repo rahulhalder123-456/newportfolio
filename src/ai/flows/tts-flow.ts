@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview A Text-to-Speech (TTS) AI flow that generates MP3 audio.
+ * @fileOverview A Text-to-Speech (TTS) AI flow that generates WAV audio.
  *
  * - textToSpeech - A function that converts text into audible speech.
  */
@@ -14,7 +14,7 @@ import {
   TextToSpeechOutputSchema,
   type TextToSpeechOutput,
 } from './tts.schema';
-import lamejs from 'lamejs';
+import wav from 'wav';
 
 export async function textToSpeech(
   input: TextToSpeechInput
@@ -23,47 +23,38 @@ export async function textToSpeech(
 }
 
 /**
- * Converts raw PCM audio data from Gemini into an MP3 file.
+ * Converts raw PCM audio data from Gemini into a WAV file format.
  * @param pcmData - The raw audio data buffer.
  * @param channels - Number of audio channels.
  * @param sampleRate - The sample rate of the audio.
- * @param bitRate - The bitrate for the MP3 encoding.
- * @returns A Base64-encoded string of the MP3 data.
+ * @param sampleWidth - The bit depth of the audio samples.
+ * @returns A Base64-encoded string of the WAV data.
  */
-function toMp3(
+function toWav(
   pcmData: Buffer,
   channels = 1,
   sampleRate = 24000,
-  bitRate = 128
-): string {
-  // Gemini returns 16-bit PCM audio, so we need an Int16Array view on the Buffer.
-  const samples = new Int16Array(
-    pcmData.buffer,
-    pcmData.byteOffset,
-    pcmData.length / Int16Array.BYTES_PER_ELEMENT
-  );
+  sampleWidth = 2 // 16-bit
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    try {
+      const writer = new wav.Writer({
+        channels,
+        sampleRate,
+        bitDepth: sampleWidth * 8,
+      });
 
-  const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, bitRate);
-  const mp3Data: Buffer[] = [];
-  
-  // Lamejs processes audio in chunks.
-  const sampleBlockSize = 1152;
-
-  for (let i = 0; i < samples.length; i += sampleBlockSize) {
-    const sampleChunk = samples.subarray(i, i + sampleBlockSize);
-    const mp3buf = mp3encoder.encodeBuffer(sampleChunk);
-    if (mp3buf.length > 0) {
-      mp3Data.push(Buffer.from(mp3buf));
+      const bufs: Buffer[] = [];
+      writer.on('data', (chunk) => bufs.push(chunk));
+      writer.on('end', () => resolve(Buffer.concat(bufs).toString('base64')));
+      writer.on('error', reject);
+      
+      writer.write(pcmData);
+      writer.end();
+    } catch(err) {
+      reject(err);
     }
-  }
-
-  // Finalize the MP3 stream.
-  const mp3buf = mp3encoder.flush();
-  if (mp3buf.length > 0) {
-    mp3Data.push(Buffer.from(mp3buf));
-  }
-
-  return Buffer.concat(mp3Data).toString('base64');
+  });
 }
 
 const ttsPrompt = ai.definePrompt({
@@ -100,10 +91,10 @@ const textToSpeechFlow = ai.defineFlow(
       'base64'
     );
 
-    const mp3Base64 = toMp3(audioBuffer);
+    const wavBase64 = await toWav(audioBuffer);
 
     return {
-      audioUrl: 'data:audio/mp3;base64,' + mp3Base64,
+      audioUrl: 'data:audio/wav;base64,' + wavBase64,
     };
   }
 );
