@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -12,6 +13,8 @@ import dynamic from 'next/dynamic';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import AnimatedTransition from '@/components/AnimatedTransition';
 import HyperloopDivider from '@/components/HyperloopDivider';
+import ChatbotToggler from '@/components/ChatbotToggler';
+import AiChatbot from '@/components/AiChatbot';
 
 const BackgroundArt = dynamic(() => import('@/components/BackgroundArt'), { ssr: false });
 
@@ -25,6 +28,7 @@ const loadingSteps = [
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingStep, setLoadingStep] = useState(0);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   useEffect(() => {
     // Animate the loading text
@@ -106,6 +110,14 @@ export default function Home() {
           <Contact />
         </main>
         <Footer />
+
+        <ChatbotToggler 
+          isChatbotOpen={isChatbotOpen} 
+          setIsChatbotOpen={setIsChatbotOpen} 
+        />
+        <AnimatePresence>
+          {isChatbotOpen && <AiChatbot onClose={() => setIsChatbotOpen(false)} />}
+        </AnimatePresence>
       </motion.div>
     </>
   );
