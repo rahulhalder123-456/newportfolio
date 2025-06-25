@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { chatWithVibeBot } from '@/ai/flows/chatbot-flow';
 import { getErrorMessage } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import EvolutionAnimation from './EvolutionAnimation';
 
 type Message = {
   id: number;
@@ -36,7 +37,6 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       const loadVoices = () => {
         const loadedVoices = synthesisRef.current?.getVoices() ?? [];
         setVoices(loadedVoices);
-        // Sometimes voices load after the first onvoiceschanged event
         if (loadedVoices.length === 0) {
             setTimeout(loadVoices, 100);
         }
@@ -49,7 +49,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
     }
 
     setMessages([
-      { id: 1, role: 'bot', text: "Ayo, what's the tea? Ask me anything." }
+      { id: 1, role: 'bot', text: "Ayo, what's good? Ask me anything about Rahul or his work." }
     ]);
 
     return () => {
@@ -75,7 +75,6 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
     synthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Voice selection for a "GenZ hacker" vibe.
     const preferredVoice = voices.find(voice => voice.name === 'Google US English') ||
                           voices.find(voice => voice.lang === 'en-US' && voice.name.toLowerCase().includes('female')) ||
                           voices.find(voice => voice.lang === 'en-US') ||
@@ -85,8 +84,8 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       utterance.voice = preferredVoice;
     }
 
-    utterance.rate = 1.1; 
-    utterance.pitch = 1.0;
+    utterance.rate = 1.2; 
+    utterance.pitch = 0.9;
 
     synthesis.speak(utterance);
   };
@@ -137,6 +136,9 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       className="fixed bottom-20 right-4 w-[90vw] max-w-sm h-[70vh] max-h-[600px] z-50"
     >
       <div className="relative flex flex-col h-full rounded-lg border border-primary/20 bg-background/80 backdrop-blur-md shadow-2xl shadow-primary/20 font-code overflow-hidden">
+        
+        <EvolutionAnimation />
+
         <header className="relative z-10 flex items-center justify-between p-3 border-b border-primary/20">
           <div className="flex items-center gap-2">
             <Bot className="h-6 w-6 text-primary animate-pulse" />
