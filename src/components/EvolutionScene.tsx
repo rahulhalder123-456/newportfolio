@@ -72,7 +72,7 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
 
   // A combination of rotation and scale to further obscure the seam on the ape model.
   const isApe = path.includes('ape.glb');
-  const rotationFix = isApe ? [0, 0.6, 0] : [0, 0, 0];
+  const rotationFix = isApe ? [0, 0.7, 0] : [0, 0, 0];
   const scaleFix = isApe ? 1.2 : scale;
 
   return <primitive object={clonedScene} scale={scaleFix} rotation={rotationFix} position={[0, -1.5, 0]} />;
