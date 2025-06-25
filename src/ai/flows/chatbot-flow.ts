@@ -55,13 +55,17 @@ const chatbotFlow = ai.defineFlow(
         return { answer: "lowkey, I got nothing. try again?" };
     }
 
-    if (answer.trim().split(' ').length < 3) {
-      return { answer };
+    // Pad short answers to improve TTS reliability, without changing the visible response.
+    let textForTts = answer;
+    if (answer.trim().length > 0 && answer.trim().length < 15) {
+      textForTts = answer + ".";
     }
 
     // 2. Generate audio for the response
     try {
-      const ttsResult = await textToSpeech({ text: answer });
+      // Pass the potentially padded text to the TTS flow
+      const ttsResult = await textToSpeech({ text: textForTts });
+      // Return the original, unpadded answer for display, along with the audio.
       return { answer, audioUrl: ttsResult.audioUrl };
     } catch (error) {
       console.error(`TTS generation failed: ${getErrorMessage(error)}`);
