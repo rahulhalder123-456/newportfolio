@@ -27,18 +27,15 @@ const generateProjectImageFlow = ai.defineFlow(
   async (input) => {
     const { media } = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `An abstract, high-tech image for a software project.
-Title: "${input.title}"
-Summary: "${input.summary}"
-Style: Futuristic, digital art, glowing lines, dark background with electric purple and teal accents.
-Aspect ratio: 3:2 landscape. No text.`,
+      // This prompt has been simplified to be faster and avoid timeouts on Vercel.
+      prompt: `A futuristic, abstract, high-tech digital art image for a software project titled "${input.title}". Dark background with glowing electric purple and teal lines. Aspect ratio 3:2 landscape. No text.`,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
     });
 
     if (!media?.url) {
-        throw new Error('Image generation failed to produce an image.');
+        throw new Error('Image generation failed to produce an image. The AI model may be temporarily unavailable or the API key may be invalid.');
     }
 
     return { imageUrl: media.url };
