@@ -19,7 +19,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { generateProjectImage } from "@/ai/flows/summarize-project-flow";
-import { getErrorMessage } from "@/lib/utils";
+import { getErrorMessage, compressImage } from "@/lib/utils";
 import { getProject, updateProject } from "@/app/projects/actions";
 
 const formSchema = z.object({
@@ -102,8 +102,9 @@ export default function EditProjectPage() {
     try {
         const result = await generateProjectImage({ title, summary });
         if (result && result.imageUrl) {
-            form.setValue("imageUrl", result.imageUrl, { shouldValidate: true });
-            setGeneratedImageUrl(result.imageUrl);
+            const compressedUrl = await compressImage(result.imageUrl);
+            form.setValue("imageUrl", compressedUrl, { shouldValidate: true });
+            setGeneratedImageUrl(compressedUrl);
             toast({
                 title: "Image Generated!",
                 description: "The AI-powered image has been re-created.",
