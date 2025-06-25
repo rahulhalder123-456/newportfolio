@@ -9,12 +9,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { chatWithVibeBot } from '@/ai/flows/chatbot-flow';
 import { getErrorMessage } from '@/lib/utils';
 import { cn } from '@/lib/utils';
-import dynamic from 'next/dynamic';
-
-const DancingRobot = dynamic(() => import('@/components/DancingRobot'), { 
-    ssr: false,
-});
-
 
 type Message = {
   id: number;
@@ -143,7 +137,6 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       className="fixed bottom-20 right-4 w-[90vw] max-w-sm h-[70vh] max-h-[600px] z-50"
     >
       <div className="relative flex flex-col h-full rounded-lg border border-primary/20 bg-background/80 backdrop-blur-md shadow-2xl shadow-primary/20 font-code overflow-hidden">
-        <DancingRobot />
         <header className="relative z-10 flex items-center justify-between p-3 border-b border-primary/20">
           <div className="flex items-center gap-2">
             <Bot className="h-6 w-6 text-primary animate-pulse" />
