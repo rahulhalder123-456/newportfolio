@@ -1,8 +1,9 @@
+
 'use client';
 
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Points, PointMaterial } from '@react-three/drei';
+import { Points, PointMaterial, Image as DreiImage } from '@react-three/drei';
 import * as THREE from 'three';
 
 // A single point in the plexus
@@ -19,8 +20,8 @@ function Node({ position, originalPosition, repulsor, time }: { position: THREE.
 
     // Repulsor effect from mouse
     const distanceToRepulsor = pos.distanceTo(repulsor);
-    if (distanceToRepulsor < 2) {
-      const repulseFactor = (2 - distanceToRepulsor) / 2;
+    if (distanceToRepulsor < 2.5) { // Increased repulsor range
+      const repulseFactor = (2.5 - distanceToRepulsor) / 2.5;
       const direction = pos.clone().sub(repulsor).normalize();
       pos.add(direction.multiplyScalar(repulseFactor * 0.5));
     }
@@ -36,7 +37,7 @@ function Node({ position, originalPosition, repulsor, time }: { position: THREE.
   );
 }
 
-// The main plexus structure
+// The main plexus structure with the user's photo
 const PlexusStructure = () => {
   const groupRef = useRef<THREE.Group>(null!);
   const lineRef = useRef<THREE.LineSegments>(null!);
@@ -48,10 +49,13 @@ const PlexusStructure = () => {
   const nodes = useMemo(() => {
     const numNodes = 150;
     const tempNodes: THREE.Vector3[] = [];
+    const minRadius = 2.5; // Keep nodes away from the central image
+    const maxRadius = 4.5;
+
     for (let i = 0; i < numNodes; i++) {
         const theta = Math.random() * 2 * Math.PI;
         const phi = Math.acos(2 * Math.random() - 1);
-        const r = Math.pow(Math.random(), 0.75) * 4.5;
+        const r = minRadius + Math.random() * (maxRadius - minRadius);
         tempNodes.push(new THREE.Vector3(
             r * Math.sin(phi) * Math.cos(theta),
             r * Math.sin(phi) * Math.sin(theta),
@@ -83,7 +87,7 @@ const PlexusStructure = () => {
         const positions = lineRef.current.geometry.attributes.position.array as Float32Array;
         let vertexpos = 0;
         let numConnected = 0;
-        const connectionDistance = 1.6;
+        const connectionDistance = 1.8; // Adjusted connection distance
 
         for (let i = 0; i < nodes.length; i++) {
           for (let j = i + 1; j < nodes.length; j++) {
@@ -132,6 +136,13 @@ const PlexusStructure = () => {
         </bufferGeometry>
         <lineBasicMaterial color="hsl(var(--accent))" transparent opacity={0.3} />
       </lineSegments>
+       <DreiImage
+          url="/mine.png"
+          scale={3.5}
+          transparent
+          opacity={0.85}
+          position={[0, 0, 0]}
+        />
     </>
   );
 };
@@ -143,9 +154,9 @@ function Starfield() {
         const count = 5000;
         const pos = new Float32Array(count * 3);
         for(let i = 0; i < count; i++) {
-            pos[i * 3 + 0] = (Math.random() - 0.5) * 20;
-            pos[i * 3 + 1] = (Math.random() - 0.5) * 20;
-            pos[i * 3 + 2] = (Math.random() - 0.5) * 20;
+            pos[i * 3 + 0] = (Math.random() - 0.5) * 30; // Increased spread
+            pos[i * 3 + 1] = (Math.random() - 0.5) * 30;
+            pos[i * 3 + 2] = (Math.random() - 0.5) * 30;
         }
         return pos;
     }, []);
@@ -159,7 +170,7 @@ function Starfield() {
 
     return (
         <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
-            <PointMaterial transparent color="hsl(var(--foreground))" size={0.01} sizeAttenuation={true} depthWrite={false} opacity={0.5} />
+            <PointMaterial transparent color="hsl(var(--foreground))" size={0.015} sizeAttenuation={true} depthWrite={false} opacity={0.5} />
         </Points>
     );
 }
@@ -168,7 +179,7 @@ export default function PlexusAnimation() {
   return (
     <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-none opacity-50">
       <Canvas camera={{ position: [0, 0, 8], fov: 75 }}>
-        <ambientLight intensity={0.2} />
+        <ambientLight intensity={0.5} />
         <PlexusStructure />
         <Starfield />
       </Canvas>
