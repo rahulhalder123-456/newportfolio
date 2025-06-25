@@ -135,7 +135,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className="fixed bottom-20 right-4 w-[90vw] max-w-sm h-[70vh] max-h-[600px] z-50"
     >
-      <div className="relative flex flex-col h-full rounded-lg border border-primary/20 bg-transparent shadow-2xl shadow-primary/20 font-code overflow-hidden">
+      <div className="relative flex flex-col h-full rounded-lg border border-primary/20 shadow-2xl shadow-primary/20 font-code overflow-hidden">
         
         <EvolutionAnimation />
 
@@ -176,7 +176,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
                   className={cn(
                     'max-w-[80%] rounded-lg px-4 py-2 text-sm break-words',
                     message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary/80 text-primary-foreground backdrop-blur-sm'
                       : 'bg-secondary/80 backdrop-blur-sm'
                   )}
                 >
