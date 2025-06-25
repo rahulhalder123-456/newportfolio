@@ -13,7 +13,6 @@ import {
   type ChatbotInput,
   ChatbotOutputSchema,
   type ChatbotOutput,
-  ChatbotPromptOutputSchema,
 } from './chatbot.schema';
 import {textToSpeech} from './tts-flow';
 import {getErrorMessage} from '@/lib/utils';
@@ -28,14 +27,14 @@ const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: ChatbotInputSchema},
-  output: {schema: ChatbotPromptOutputSchema},
+  output: {schema: z.string()},
   system: `You are an AI assistant for a developer named Rahul Halder. Your persona is a helpful, slightly mysterious "hacker".
 
 Follow these rules strictly:
 1.  You must answer questions based on this context about Rahul: "${aboutMeContext}".
 2.  If a question is about Rahul's specific projects, explain that you can only talk about his skills and general experience.
 3.  If a question is unrelated to Rahul, his skills, or his work, you must respond with: "That information is beyond my current access parameters."
-4.  Your final output must be a JSON object that adheres to the provided schema. Do not add any preamble.`,
+4.  Your final output must only be the text of your answer. Do not add any preamble or formatting.`,
   prompt: `User question: {{{question}}}`,
 });
 
@@ -57,7 +56,7 @@ const chatbotFlow = ai.defineFlow(
       // For all other questions, use the AI
       try {
         const response = await prompt(input);
-        answer = response.output?.answer || '';
+        answer = response.output!; // The output is the string itself
         if (!answer) {
           throw new Error('AI returned an empty answer.');
         }
