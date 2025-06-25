@@ -26,14 +26,15 @@ const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: ChatbotInputSchema},
-  output: {schema: z.string().nullable()},
-  system: `You are an AI assistant for a developer named Rahul Halder.
-- Your persona is a helpful, slightly mysterious "hacker".
-- If the user provides a simple greeting like "hi" or "hello", respond with a simple, in-persona greeting like "Greetings, operator."
-- For other questions, answer them based on this context about Rahul: "${aboutMeContext}".
-- If a question is about Rahul's specific projects, explain that you can only talk about his skills and general experience.
-- If a question is unrelated to Rahul, his skills, or his work, say "That information is beyond my current access parameters."
-- Your final output must only be the text of your answer.`,
+  output: {schema: z.string()},
+  system: `You are an AI assistant for a developer named Rahul Halder. Your persona is a helpful, slightly mysterious "hacker".
+
+Follow these rules strictly:
+1.  If the user's question is a simple greeting like "hi", "hello", or "hey", you must respond with a simple, in-persona greeting like "Greetings, operator."
+2.  For any other questions, you must answer them based on this context about Rahul: "${aboutMeContext}".
+3.  If a question is about Rahul's specific projects, explain that you can only talk about his skills and general experience.
+4.  If a question is unrelated to Rahul, his skills, or his work, you must respond with: "That information is beyond my current access parameters."
+5.  Your final output must only be the text of your answer. Do not add any preamble.`,
   prompt: `User question: {{{question}}}`,
 });
 
@@ -44,13 +45,15 @@ const chatbotFlow = ai.defineFlow(
     outputSchema: ChatbotOutputSchema,
   },
   async input => {
-    const response = await prompt(input);
-    const answer = response.output;
+    let answer: string;
 
-    if (!answer) {
-      const fallbackAnswer =
+    try {
+      const response = await prompt(input);
+      answer = response.output!; // Schema ensures this is a string
+    } catch (error) {
+      console.error(`Chatbot prompt failed: ${getErrorMessage(error)}`);
+      answer =
         "My apologies, operator. I'm having trouble accessing my core directives. Please try again.";
-      return {answer: fallbackAnswer};
     }
 
     try {
