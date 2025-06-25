@@ -1,17 +1,31 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
 # Dependencies
 /node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Testing
+/coverage
 
 # Next.js build output
 /.next/
 /out/
 
-# Vercel deployment folder
+# Production / Local environments
+.env
+.env.local
+.env.production
+.env.development.local
+.env.test.local
+
+# Misc
+.DS_Store
+*.pem
+
+# Vercel
 .vercel
-
-# Ignore all .env files except .env.example
-.env*
-!.env.example
-
 
 # Log files
 npm-debug.log*
@@ -19,11 +33,4 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Editor directories and files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Editor
