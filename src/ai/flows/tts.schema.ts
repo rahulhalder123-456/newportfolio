@@ -15,6 +15,6 @@ export const TextToSpeechInputSchema = z.object({
 export type TextToSpeechInput = z.infer<typeof TextToSpeechInputSchema>;
 
 export const TextToSpeechOutputSchema = z.object({
-  audioUrl: z.string().url().describe('A data URI for the generated audio.'),
+  audioUrl: z.string().describe('A data URI for the generated audio.'),
 });
 export type TextToSpeechOutput = z.infer<typeof TextToSpeechOutputSchema>;
