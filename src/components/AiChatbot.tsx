@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -46,12 +45,23 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
 
   useEffect(() => {
     if (audioToPlay) {
-      try {
-        const audio = new Audio(audioToPlay);
-        audio.play().catch(err => console.error("Audio playback failed:", err));
-      } catch (error) {
-        console.error("Error creating audio object:", error);
-      } finally {
+      const audio = new Audio(audioToPlay);
+      const playPromise = audio.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Audio playback started successfully.");
+          })
+          .catch((error) => {
+            console.error("Audio playback was prevented by the browser:", error);
+            // Autoplay was prevented. You could show a "Play" button here.
+          })
+          .finally(() => {
+            setAudioToPlay(null); // Clear the URL after attempting to play
+          });
+      } else {
+        // In some older browsers, play() doesn't return a promise.
         setAudioToPlay(null);
       }
     }
