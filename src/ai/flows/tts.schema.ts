@@ -7,7 +7,7 @@
  * - TextToSpeechOutput - TypeScript type for TTS output.
  */
 
-import {z} from 'zod';
+import { z } from 'zod';
 
 export const TextToSpeechInputSchema = z.object({
   text: z.string().describe('The text to convert to speech.'),

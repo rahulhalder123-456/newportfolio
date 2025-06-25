@@ -5,7 +5,7 @@
  * - textToSpeech - A function that converts text into audible speech.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import {
   TextToSpeechInputSchema,
   type TextToSpeechInput,
@@ -35,10 +35,8 @@ async function toWav(
 
     const bufs: Buffer[] = [];
     writer.on('error', reject);
-    writer.on('data', function (d) {
-      bufs.push(d);
-    });
-    writer.on('end', function () {
+    writer.on('data', d => bufs.push(d));
+    writer.on('end', () => {
       resolve(Buffer.concat(bufs).toString('base64'));
     });
 
@@ -54,21 +52,23 @@ const textToSpeechFlow = ai.defineFlow(
     outputSchema: TextToSpeechOutputSchema,
   },
   async input => {
-    const {media} = await ai.generate({
+    const { media } = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: {voiceName: 'Algenib'}, // A male voice for a "hacker" feel
+            prebuiltVoiceConfig: { voiceName: 'Algenib' },
           },
         },
       },
       prompt: input.text,
     });
+
     if (!media?.url) {
-      throw new Error('no media returned from TTS model');
+      throw new Error('No media returned from TTS model');
     }
+
     const audioBuffer = Buffer.from(
       media.url.substring(media.url.indexOf(',') + 1),
       'base64'
