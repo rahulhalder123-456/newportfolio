@@ -32,7 +32,7 @@ function PointCloudFace() {
 
     const img = texture.image;
     const canvas = document.createElement('canvas');
-    const samplingStep = 4; // Sample every 4th pixel
+    const samplingStep = 6; // Sample every 6th pixel (increased from 4 for performance)
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });

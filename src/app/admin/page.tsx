@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
@@ -70,7 +71,7 @@ const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
-  imageUrl: z.string().min(1, "Please generate an image."),
+  imageUrl: z.string(),
 });
 
 export default function AdminPage() {
@@ -386,7 +387,7 @@ export default function AdminPage() {
                   <Card key={project.id} className="bg-secondary/50">
                     <CardContent className="p-4 flex items-center gap-4">
                       <Image
-                        src={project.imageUrl}
+                        src={project.imageUrl || 'https://placehold.co/600x400.png'}
                         alt={project.title}
                         width={80}
                         height={80}
@@ -400,7 +401,7 @@ export default function AdminPage() {
                       </div>
                       <div className="flex gap-2">
                         <Button asChild variant="outline" size="icon">
-                          <Link href={`/admin/edit/${encodeURIComponent(project.id)}`}>
+                          <Link href={`/admin/edit/${project.id}`}>
                             <Edit className="h-4 w-4" />
                           </Link>
                         </Button>

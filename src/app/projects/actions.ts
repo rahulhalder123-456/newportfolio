@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -10,7 +11,7 @@ const projectSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
-  imageUrl: z.string().min(1, "Please generate or provide an image."),
+  imageUrl: z.string(),
 });
 
 // TypeScript type for a project, including its database ID

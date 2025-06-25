@@ -38,7 +38,7 @@ export default function Footer() {
           setKey((prevKey) => prevKey + 1);
         }, 120000); // 2 minutes
       }
-    }, 50);
+    }, 75);
 
     return () => {
       clearInterval(typingInterval);

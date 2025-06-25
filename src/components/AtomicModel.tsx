@@ -19,7 +19,7 @@ const NetworkStructure = () => {
     const groupRef = useRef<THREE.Group>(null!);
     
     const { atoms, bonds } = useMemo(() => {
-        const numAtoms = 40;
+        const numAtoms = 30;
         const volumeSize = 20;
         const bondThreshold = 2.8;
         const atomPoints = [];
