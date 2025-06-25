@@ -26,7 +26,7 @@ function Particle({ originalPosition, mousePos }: { originalPosition: THREE.Vect
     const distanceToMouse = target.distanceTo(mousePos.current);
     const repulsionRadius = 1.5;
     if (distanceToMouse < repulsionRadius) {
-      const repulsionStrength = (1 - distanceToMouse / repulsionRadius) * 3.5;
+      const repulsionStrength = (1 - distanceToMouse / repulsionRadius) * 3;
       const direction = target.clone().sub(mousePos.current).normalize();
       target.add(direction.multiplyScalar(repulsionStrength));
     }
@@ -48,7 +48,7 @@ function Particle({ originalPosition, mousePos }: { originalPosition: THREE.Vect
 
   return (
     <mesh ref={ref} position={originalPosition}>
-      <sphereGeometry args={[0.018, 8, 8]} />
+      <sphereGeometry args={[0.025, 8, 8]} />
       <meshStandardMaterial color={originalColor} emissive="hsl(var(--primary))" emissiveIntensity={0.8} roughness={0.2} />
     </mesh>
   );
@@ -77,7 +77,7 @@ function PointCloudFace() {
     const data = imageData.data;
     
     const sampledPoints: THREE.Vector3[] = [];
-    const samplingStep = 3; // Increase particle density for clarity
+    const samplingStep = 5; // Use a larger step for fewer, more spaced out dots
     const scale = 5; // How large the face appears
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
@@ -86,8 +86,8 @@ function PointCloudFace() {
         const alpha = data[i + 3];
         const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
 
-        // Only create points for non-transparent and non-dark pixels to focus on face
-        if (alpha > 128 && brightness > 40) {
+        // Only create points for non-transparent and brighter pixels
+        if (alpha > 128 && brightness > 50) {
           const posX = (x / canvas.width - 0.5) * scale;
           const posY = -(y / canvas.height - 0.5) * scale;
           const posZ = (brightness / 255 - 0.5) * 0.7; // Use brightness for depth
@@ -104,7 +104,7 @@ function PointCloudFace() {
     if (particles.length === 0) return null;
 
     const connections: number[] = [];
-    const connectionDistance = 0.12; // Adjusted for density
+    const connectionDistance = 0.22; // Adjusted for new dot density
 
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
