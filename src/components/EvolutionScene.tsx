@@ -8,7 +8,7 @@ import * as THREE from 'three';
 
 // Data for each model: path and a scale factor to normalize their sizes.
 const modelData = [
-  { path: '/models/ape.glb', scale: 1.2 }, // Adjusted scale for better presentation
+  { path: '/models/ape.glb', scale: 1.2 },
   { path: '/models/homo_erectus.glb', scale: 1.5 },
   { path: '/models/modern_human.glb', scale: 1.5 },
   { path: '/models/cyborg.glb', scale: 2.5 },
@@ -63,9 +63,13 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
     });
   });
 
-  // A primitive is a way to directly inject a Three.js object into the scene.
-  // We always render it; its visibility is controlled by its opacity.
-  return <primitive object={clonedScene} scale={scale} position={[0, -1.5, 0]} />;
+  // FIX: Check if the current model is the ape to apply a specific rotation.
+  // This hides a visual seam artifact in the original model file.
+  const isApe = path.includes('ape.glb');
+  const rotationFix = isApe ? [0, 0.3, 0] : [0, 0, 0];
+  const scaleFix = isApe ? 1.15 : scale;
+
+  return <primitive object={clonedScene} scale={scaleFix} rotation={rotationFix} position={[0, -1.5, 0]} />;
 }
 
 
