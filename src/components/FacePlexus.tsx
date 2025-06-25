@@ -11,31 +11,45 @@ function Particle({ originalPosition, mousePos }: { originalPosition: THREE.Vect
   const ref = useRef<Mesh>(null!);
   const position = useMemo(() => originalPosition.clone(), [originalPosition]);
 
+  // Pre-calculate colors for performance
+  const originalColor = useMemo(() => new THREE.Color("hsl(var(--primary))"), []);
+  const hoverColor = useMemo(() => new THREE.Color("hsl(var(--accent))"), []);
+
+
   useFrame((state, delta) => {
+    if (!ref.current) return;
+
     // This is the target position
     const target = originalPosition.clone();
     
     // Repulsion logic
-    const distance = target.distanceTo(mousePos.current);
-    const maxDistance = 2.0; // Repulsion radius
-    if (distance < maxDistance) {
-      const repulsionStrength = (1 - distance / maxDistance) * 2.0; // Stronger push
+    const distanceToMouse = target.distanceTo(mousePos.current);
+    const repulsionRadius = 1.5;
+    if (distanceToMouse < repulsionRadius) {
+      const repulsionStrength = (1 - distanceToMouse / repulsionRadius) * 3.5;
       const direction = target.clone().sub(mousePos.current).normalize();
       target.add(direction.multiplyScalar(repulsionStrength));
     }
 
     // Smoothly move the particle to its target position (original + repulsion)
-    position.lerp(target, 0.08); // Snappier return
+    position.lerp(target, 0.08);
+    ref.current.position.copy(position);
 
-    if (ref.current) {
-      ref.current.position.copy(position);
+    // Color change on hover
+    const colorRadius = 1.0;
+    const materialColor = (ref.current.material as THREE.MeshStandardMaterial).color;
+    
+    if (distanceToMouse < colorRadius) {
+        materialColor.lerp(hoverColor, 0.1);
+    } else {
+        materialColor.lerp(originalColor, 0.1);
     }
   });
 
   return (
     <mesh ref={ref} position={originalPosition}>
-      <sphereGeometry args={[0.02, 8, 8]} />
-      <meshStandardMaterial color="hsl(var(--primary))" emissive="hsl(var(--primary))" emissiveIntensity={0.8} roughness={0.2} />
+      <sphereGeometry args={[0.018, 8, 8]} />
+      <meshStandardMaterial color={originalColor} emissive="hsl(var(--primary))" emissiveIntensity={0.8} roughness={0.2} />
     </mesh>
   );
 }
@@ -45,7 +59,7 @@ function PointCloudFace() {
   const [particles, setParticles] = useState<THREE.Vector3[]>([]);
   const texture = useLoader(THREE.TextureLoader, '/mine.png');
   const groupRef = useRef<THREE.Group>(null!);
-  const mousePos = useRef(new THREE.Vector3(1000, 1000, 1000));
+  const mousePos = useRef(new THREE.Vector3(10000, 10000, 10000)); // Start mouse way off screen
 
   // This effect runs once to sample the image and create particle positions
   useEffect(() => {
@@ -63,7 +77,7 @@ function PointCloudFace() {
     const data = imageData.data;
     
     const sampledPoints: THREE.Vector3[] = [];
-    const samplingStep = 4; // Drastically increase particle density
+    const samplingStep = 3; // Increase particle density for clarity
     const scale = 5; // How large the face appears
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
@@ -90,7 +104,7 @@ function PointCloudFace() {
     if (particles.length === 0) return null;
 
     const connections: number[] = [];
-    const connectionDistance = 0.2; // Adjusted for density
+    const connectionDistance = 0.12; // Adjusted for density
 
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
@@ -106,11 +120,8 @@ function PointCloudFace() {
     return geometry;
   }, [particles]);
 
-  // Update mouse position and rotate the group
-  useFrame((state, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.1;
-    }
+  // Update mouse position and remove auto-rotation
+  useFrame((state) => {
     // Map mouse screen coords to 3D world coords
     const { pointer, viewport } = state;
     mousePos.current.x = (pointer.x * viewport.width) / 2;
