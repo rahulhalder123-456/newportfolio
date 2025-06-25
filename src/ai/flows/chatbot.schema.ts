@@ -18,7 +18,6 @@ export const ChatbotOutputSchema = z.object({
   answer: z.string().describe("The chatbot's answer."),
   audioUrl: z
     .string()
-    .url()
     .optional()
     .describe('A data URI for the generated audio of the answer.'),
 });
