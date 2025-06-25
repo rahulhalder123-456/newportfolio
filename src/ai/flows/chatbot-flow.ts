@@ -24,7 +24,7 @@ export async function chatWithVibeBot(
 
 const genZPrompt = ai.definePrompt({
   name: 'genZPrompt',
-  model: 'googleai/gemini-1.5-pro-latest',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: z.object({ query: z.string() }) },
   prompt: `You are a super chill, helpful AI assistant with a GenZ personality. 
       Your name is 'VibeBot'. Keep your answers short, snappy, and use modern slang.
