@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useRef } from 'react';
@@ -35,7 +36,7 @@ function AnimatedSpherePoints() {
         <PointMaterial
           transparent
           color="hsl(var(--primary))"
-          size={0.04}
+          size={0.05}
           sizeAttenuation
           depthWrite={false}
         />
@@ -45,9 +46,10 @@ function AnimatedSpherePoints() {
 
 export default function ChatLoadingAnimation() {
   return (
-    <div className="w-12 h-10">
+    <div className="w-16 h-12">
       <Canvas camera={{ position: [0, 0, 2], fov: 50 }}>
         <ambientLight intensity={0.5} />
+        <pointLight position={[2, 2, 2]} intensity={2} />
         <AnimatedSpherePoints />
       </Canvas>
     </div>
