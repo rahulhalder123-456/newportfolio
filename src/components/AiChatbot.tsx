@@ -77,8 +77,8 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       utterance.voice = preferredVoice;
     }
 
-    utterance.rate = 1.2; // A bit faster for a more energetic feel
-    utterance.pitch = 1.1; // Slightly higher pitch
+    utterance.rate = 1.1; // A bit faster for a more energetic feel
+    utterance.pitch = 1; // Slightly higher pitch
 
     synthesis.speak(utterance);
   };
