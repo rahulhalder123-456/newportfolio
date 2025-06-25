@@ -34,7 +34,7 @@ const genZPrompt = ai.definePrompt({
       
       The user asked: "{{query}}"`,
   config: {
-    temperature: 0.8, // A bit more creative with slang
+    temperature: 0.8,
   },
 });
 
@@ -49,8 +49,10 @@ const chatbotFlow = ai.defineFlow(
     const llmResponse = await genZPrompt(input);
     const answer = llmResponse.text;
 
-    // An empty response from the LLM is valid. An error will throw an exception
-    // which is handled by the frontend, so no need for an explicit check here.
+    if (!answer) {
+        // Handle cases where the model returns an empty response
+        return { answer: "lowkey, I got nothing. try again?" };
+    }
 
     // 2. Generate audio for the response
     try {

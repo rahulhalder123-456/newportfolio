@@ -30,14 +30,12 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Add initial greeting from the bot
     setMessages([
       { id: 1, role: 'bot', text: "Ayo, what's the tea? Ask me anything." }
     ]);
   }, []);
 
   useEffect(() => {
-    // Scroll to the bottom when new messages are added
     if (scrollAreaRef.current) {
         const viewport = scrollAreaRef.current.querySelector('div');
         if (viewport) {
@@ -54,7 +52,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       } catch (error) {
         console.error("Error creating audio object:", error);
       } finally {
-        setAudioToPlay(null); // Reset after attempting to play
+        setAudioToPlay(null);
       }
     }
   }, [audioToPlay]);
@@ -77,11 +75,20 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
         setAudioToPlay(result.audioUrl);
       }
     } catch (error) {
-      console.error(`Chatbot failed: ${getErrorMessage(error)}`);
+      const errorMessage = getErrorMessage(error);
+      console.error(`Chatbot failed: ${errorMessage}`);
+      
+      let botText = 'Oof, major L. My circuits are fried right now. Maybe try again later.';
+      if (errorMessage.includes('API key not valid')) {
+        botText = 'Yikes, my API key is invalid. The admin needs to check the .env file.';
+      } else if (errorMessage.toLowerCase().includes('quota')) {
+        botText = "Sheesh, I'm too popular. We've hit the usage limit for today. Try again tomorrow!";
+      }
+
       const botMessage: Message = {
         id: Date.now() + 1,
         role: 'bot',
-        text: `Oof, major L. My circuits are fried right now. Maybe try again later.`,
+        text: botText,
       };
       setMessages((prev) => [...prev, botMessage]);
     } finally {
@@ -98,7 +105,6 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       className="fixed bottom-20 right-4 w-[90vw] max-w-sm h-[70vh] max-h-[600px] z-50"
     >
       <div className="flex flex-col h-full rounded-lg border border-primary/20 bg-background/80 backdrop-blur-md shadow-2xl shadow-primary/20 font-code">
-        {/* Header */}
         <header className="flex items-center justify-between p-3 border-b border-primary/20">
           <div className="flex items-center gap-2">
             <Bot className="h-6 w-6 text-primary animate-pulse" />
@@ -109,14 +115,13 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
           </Button>
         </header>
 
-        {/* Messages */}
         <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
           <div className="space-y-6">
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={cn(
-                  'flex items-start gap-3',
+                  'flex w-full items-start gap-3',
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 )}
               >
@@ -142,12 +147,12 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
                 )}
               </div>
             ))}
-            {isLoading && messages[messages.length - 1]?.role === 'user' && (
+            {isLoading && (
               <div className="flex items-start gap-3 justify-start">
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <Bot className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="bg-secondary rounded-lg px-4 py-2 text-sm">
+                  <div className="bg-secondary rounded-lg px-4 py-2">
                      <Loader2 className="w-5 h-5 animate-spin"/>
                   </div>
               </div>
@@ -155,7 +160,6 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
           </div>
         </ScrollArea>
 
-        {/* Input Form */}
         <footer className="p-3 border-t border-primary/20">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <Input
