@@ -45,7 +45,7 @@ function PointCloudFace() {
     const pointGrid: (THREE.Vector3 | null)[][] = [];
 
     const particles: THREE.Vector3[] = [];
-    const scale = 3; // Adjusted for a balanced size.
+    const scale = 3.5; // Adjusted for a balanced size.
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
       pointGrid[y] = [];
@@ -54,7 +54,7 @@ function PointCloudFace() {
         const alpha = pixelData[i + 3];
         const brightness = (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 3;
 
-        if (alpha > 128 && brightness > 80) {
+        if (alpha > 128 && brightness > 30) {
           const posX = (x / canvas.width - 0.5) * scale;
           const posY = -(y / canvas.height - 0.5) * scale;
           const posZ = (brightness / 255 - 0.5) * 0.5;
