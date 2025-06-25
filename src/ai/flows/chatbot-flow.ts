@@ -12,6 +12,7 @@ import {
   type ChatbotInput,
   ChatbotOutputSchema,
   type ChatbotOutput,
+  ChatbotPromptOutputSchema,
 } from './chatbot.schema';
 import {textToSpeech} from './tts-flow';
 import {getErrorMessage} from '@/lib/utils';
@@ -26,7 +27,7 @@ const prompt = ai.definePrompt({
   name: 'chatbotPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: ChatbotInputSchema},
-  output: {schema: z.string()},
+  output: {schema: ChatbotPromptOutputSchema}, // Use the new, more reliable object schema
   system: `You are an AI assistant for a developer named Rahul Halder. Your persona is a helpful, slightly mysterious "hacker".
 
 Follow these rules strictly:
@@ -34,7 +35,7 @@ Follow these rules strictly:
 2.  For any other questions, you must answer them based on this context about Rahul: "${aboutMeContext}".
 3.  If a question is about Rahul's specific projects, explain that you can only talk about his skills and general experience.
 4.  If a question is unrelated to Rahul, his skills, or his work, you must respond with: "That information is beyond my current access parameters."
-5.  Your final output must only be the text of your answer. Do not add any preamble.`,
+5.  Your final output must be a JSON object that adheres to the provided schema. Do not add any preamble.`,
   prompt: `User question: {{{question}}}`,
 });
 
@@ -49,7 +50,12 @@ const chatbotFlow = ai.defineFlow(
 
     try {
       const response = await prompt(input);
-      answer = response.output!; // Schema ensures this is a string
+      // Safely access the answer from the structured output.
+      answer = response.output?.answer || '';
+      if (!answer) {
+        // This case handles if the AI returns an empty answer, which we treat as an error.
+        throw new Error('AI returned an empty answer.');
+      }
     } catch (error) {
       console.error(`Chatbot prompt failed: ${getErrorMessage(error)}`);
       answer =

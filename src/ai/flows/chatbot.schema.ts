@@ -23,3 +23,10 @@ export const ChatbotOutputSchema = z.object({
     .describe('A data URI for the generated audio of the answer.'),
 });
 export type ChatbotOutput = z.infer<typeof ChatbotOutputSchema>;
+
+// This is the new schema for the direct output of the prompt itself.
+// Asking for a structured object is more reliable than a raw string.
+export const ChatbotPromptOutputSchema = z.object({
+    answer: z.string().describe("The text of the AI's response to the user's question.")
+});
+export type ChatbotPromptOutput = z.infer<typeof ChatbotPromptOutputSchema>;
