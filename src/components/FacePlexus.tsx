@@ -44,7 +44,7 @@ function PointCloudFace() {
     const pointGrid: (THREE.Vector3 | null)[][] = [];
 
     const particles: THREE.Vector3[] = [];
-    const scale = 4; // Changed from 5 to make the face smaller and more centered.
+    const scale = 3; // Changed from 4 to make the face smaller and more centered.
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
       pointGrid[y] = [];
