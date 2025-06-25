@@ -3,7 +3,7 @@
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Suspense, useState, useEffect, useRef } from 'react';
-import { OrbitControls, useGLTF, Stage, Preload } from '@react-three/drei';
+import { OrbitControls, useGLTF, Preload, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Define model data with custom scales for each
@@ -24,7 +24,8 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
-        // Ensure material is transparent for fade effect
+        // Enable shadows and transparency for fade effect
+        child.castShadow = true;
         child.material.transparent = true;
         child.material.needsUpdate = true;
       }
@@ -39,14 +40,14 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
     groupRef.current.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const material = child.material as THREE.MeshStandardMaterial;
-        // Smoothly interpolate opacity
+        // Smoothly interpolate opacity to fade in/out
         material.opacity += (targetOpacity - material.opacity) * 0.05;
       }
     });
   });
 
-  // Use the scale prop passed from modelData
-  return <primitive object={scene} ref={groupRef} scale={scale} position={[0, -0.5, 0]} />;
+  // Use the scale prop passed from modelData and adjust position
+  return <primitive object={scene} ref={groupRef} scale={scale} position={[0, -1.5, 0]} />;
 }
 
 
@@ -64,31 +65,45 @@ export default function EvolutionScene() {
 
   return (
     <div className="absolute inset-0 z-0">
-      <Canvas camera={{ position: [0, 1.5, 8], fov: 50 }} shadows>
+      <Canvas camera={{ position: [0, 1, 8], fov: 50 }} shadows>
         <Suspense fallback={null}>
-          <Stage 
-            environment="city" 
-            intensity={0.6} 
-            adjustCamera={false} 
-            shadows={{ type: 'contact', opacity: 0.3, blur: 2 }}
-          >
-            {/* Map over modelData and pass the scale to each SingleModel */}
-            {modelData.map((data, index) => (
-              <SingleModel 
-                key={data.path} 
-                path={data.path} 
-                scale={data.scale}
-                isActive={index === activeIndex} 
-              />
-            ))}
-          </Stage>
+          <Environment preset="city" />
+          {modelData.map((data, index) => (
+            <SingleModel 
+              key={data.path} 
+              path={data.path} 
+              scale={data.scale}
+              isActive={index === activeIndex} 
+            />
+          ))}
+          {/* Add a ground plane to receive shadows */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
+              <planeGeometry args={[100, 100]} />
+              <shadowMaterial opacity={0.4} />
+          </mesh>
         </Suspense>
+
+        <ambientLight intensity={0.5} />
+        <directionalLight 
+          position={[5, 5, 5]} 
+          intensity={1.5} 
+          castShadow 
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+          shadow-camera-far={50}
+          shadow-camera-left={-10}
+          shadow-camera-right={10}
+          shadow-camera-top={10}
+          shadow-camera-bottom={-10}
+        />
+        
         <OrbitControls
           enableZoom={false}
           autoRotate
           autoRotateSpeed={0.5}
-          minPolarAngle={Math.PI / 2.8}
-          maxPolarAngle={Math.PI / 1.8}
+          target={[0, 0.5, 0]} // Adjust target to focus on the model's center
+          minPolarAngle={Math.PI / 2.5}
+          maxPolarAngle={Math.PI / 1.9}
         />
         <Preload all />
       </Canvas>
