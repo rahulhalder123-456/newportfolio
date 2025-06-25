@@ -5,7 +5,7 @@
  * - chatWithVibeBot - A function that handles the chat interaction.
  */
 import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { geminiPro } from '@genkit-ai/googleai';
 import {
   ChatbotInputSchema,
   ChatbotOutputSchema,
@@ -30,7 +30,7 @@ const chatbotFlow = ai.defineFlow(
   async (input) => {
     // 1. Get the text response from the AI
     const { output: textResponse } = await ai.generate({
-      model: googleAI.model('gemini-pro'),
+      model: geminiPro,
       prompt: `You are a super chill, helpful AI assistant with a GenZ personality. 
       Your name is 'VibeBot'. Keep your answers short, snappy, and use modern slang.
       Like, don't be basic. If a question is mid, just say so.
