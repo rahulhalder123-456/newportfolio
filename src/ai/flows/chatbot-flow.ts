@@ -15,8 +15,8 @@ import {
   type ChatbotOutput,
   ChatbotPromptOutputSchema,
 } from './chatbot.schema';
+import {textToSpeech} from './tts-flow';
 import {getErrorMessage} from '@/lib/utils';
-import wav from 'wav';
 
 export async function askChatbot(input: ChatbotInput): Promise<ChatbotOutput> {
   return chatbotFlow(input);
@@ -38,31 +38,6 @@ Follow these rules strictly:
 4.  Your final output must be a JSON object that adheres to the provided schema. Do not add any preamble.`,
   prompt: `User question: {{{question}}}`,
 });
-
-async function toWav(
-  pcmData: Buffer,
-  channels = 1,
-  rate = 24000,
-  sampleWidth = 2
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const writer = new wav.Writer({
-      channels,
-      sampleRate: rate,
-      bitDepth: sampleWidth * 8,
-    });
-
-    const bufs: Buffer[] = [];
-    writer.on('error', reject);
-    writer.on('data', d => bufs.push(d));
-    writer.on('end', () => {
-      resolve(Buffer.concat(bufs).toString('base64'));
-    });
-
-    writer.write(pcmData);
-    writer.end();
-  });
-}
 
 const chatbotFlow = ai.defineFlow(
   {
@@ -93,35 +68,10 @@ const chatbotFlow = ai.defineFlow(
       }
     }
 
-    // Generate audio for the determined answer
+    // Generate audio for the determined answer using the separate TTS flow
     try {
-      const { media } = await ai.generate({
-        model: 'googleai/gemini-2.5-flash-preview-tts',
-        config: {
-          responseModalities: ['AUDIO'],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: 'Algenib' },
-            },
-          },
-        },
-        prompt: answer,
-      });
-
-      if (!media?.url) {
-        throw new Error('No media returned from TTS model');
-      }
-
-      const audioBuffer = Buffer.from(
-        media.url.substring(media.url.indexOf(',') + 1),
-        'base64'
-      );
-
-      const wavBase64 = await toWav(audioBuffer);
-      const audioUrl = 'data:audio/wav;base64,' + wavBase64;
-
-      return {answer, audioUrl};
-
+      const ttsResult = await textToSpeech({text: answer});
+      return {answer, audioUrl: ttsResult.audioUrl};
     } catch (error) {
       console.error(`TTS generation failed: ${getErrorMessage(error)}`);
       // Return the text answer even if TTS fails, so the chat doesn't break.
