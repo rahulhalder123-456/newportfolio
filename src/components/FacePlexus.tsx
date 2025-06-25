@@ -23,7 +23,12 @@ function PointCloudFace() {
       initialPositions: new Float32Array(),
       lineGeometry: null as THREE.BufferGeometry | null,
     };
-    if (!texture) return data;
+    
+    // This is the fix: Add a more robust check to ensure the image is fully loaded.
+    // This prevents a race condition where processing happens on an incomplete image.
+    if (!texture || !texture.image?.complete || !texture.image?.naturalWidth) {
+      return data;
+    }
 
     const img = texture.image;
     const canvas = document.createElement('canvas');
@@ -98,7 +103,7 @@ function PointCloudFace() {
   
   useFrame((state) => {
     const { pointer, viewport } = state;
-    if (!pointsRef.current) return;
+    if (!pointsRef.current || !pointsRef.current.geometry.attributes.position) return;
     
     const targetMouseX = (pointer.x * viewport.width) / 2;
     const targetMouseY = (pointer.y * viewport.height) / 2;
@@ -144,6 +149,10 @@ function PointCloudFace() {
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
     pointsRef.current.geometry.attributes.color.needsUpdate = true;
   });
+
+  if (!initialPositions.length) {
+    return null; // Don't render anything if there are no points yet
+  }
 
   return (
     <>
