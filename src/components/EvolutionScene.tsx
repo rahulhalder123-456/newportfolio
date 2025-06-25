@@ -19,13 +19,17 @@ modelData.forEach(data => useGLTF.preload(data.path));
 function SingleModel({ path, scale, isActive }: { path: string, scale: number, isActive: boolean }) {
   const { scene } = useGLTF(path);
 
-  // We clone the scene and its materials to ensure each model instance is unique and can be animated independently.
+  // We clone the scene so each model is a unique instance.
+  // We also modify the materials to start transparent and invisible.
   const clonedScene = useMemo(() => {
     const newScene = scene.clone();
     newScene.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-            child.material = (child.material as THREE.Material).clone();
-        }
+      if ((child as THREE.Mesh).isMesh) {
+        const newMaterial = (child.material as THREE.Material).clone() as THREE.MeshStandardMaterial;
+        newMaterial.transparent = true;
+        newMaterial.opacity = 0; // Start completely invisible
+        child.material = newMaterial;
+      }
     });
     return newScene;
   }, [scene]);
@@ -36,20 +40,13 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
     
     clonedScene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh && child.material instanceof THREE.MeshStandardMaterial) {
-          // Set material to be transparent
-          child.material.transparent = true;
           // Animate the opacity value towards the target for a smooth transition
-          // lerp(current, target, speed)
-          child.material.opacity += (targetOpacity - child.material.opacity) * (delta * 5.0);
+          child.material.opacity = THREE.MathUtils.lerp(child.material.opacity, targetOpacity, delta * 2.0);
       }
     });
   });
 
-  // Only render the model if its opacity is high enough to be seen.
-  // This is a small optimization.
-  const isVisible = (clonedScene.children[0] as THREE.Mesh)?.material?.opacity > 0.01;
-  if (!isVisible) return null;
-
+  // Always render the primitive. Its opacity will handle its visibility.
   return <primitive object={clonedScene} scale={scale} position={[0, -1.5, 0]} />;
 }
 
