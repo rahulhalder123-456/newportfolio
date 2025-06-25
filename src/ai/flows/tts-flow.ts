@@ -66,7 +66,7 @@ const ttsPrompt = ai.definePrompt({
     responseModalities: ['AUDIO'],
     speechConfig: {
       voiceConfig: {
-        prebuiltVoiceConfig: { voiceName: 'Palawan' },
+        prebuiltVoiceConfig: { voiceName: 'Algenib' },
       },
     },
   },

@@ -26,8 +26,14 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   const [isLoading, setIsLoading] = useState(false);
   
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    // Create a persistent audio element instance. This is more reliable for playback.
+    if (typeof window !== 'undefined') {
+      audioRef.current = new Audio();
+    }
+    
     setMessages([
       { id: 1, role: 'bot', text: "Ayo, what's the tea? Ask me anything." }
     ]);
@@ -57,11 +63,10 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       const botMessage: Message = { id: Date.now() + 1, role: 'bot', text: result.answer };
       setMessages((prev) => [...prev, botMessage]);
 
-      if (result.audioUrl) {
-        const audio = new Audio(result.audioUrl);
-        audio.play().catch(error => {
+      if (result.audioUrl && audioRef.current) {
+        audioRef.current.src = result.audioUrl;
+        audioRef.current.play().catch(error => {
             console.error("Audio playback failed:", error);
-            // This can happen if the user hasn't interacted with the page yet.
         });
       }
     } catch (error) {
