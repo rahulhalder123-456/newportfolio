@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useRef, useMemo } from 'react';
@@ -166,14 +167,14 @@ function PointCloudFace() {
           <PointMaterial
               transparent
               vertexColors
-              size={0.03}
+              size={0.04}
               sizeAttenuation={true}
               depthWrite={false}
           />
         </Points>
         {lineGeometry && (
           <lineSegments geometry={lineGeometry}>
-            <lineBasicMaterial color="hsl(var(--accent))" transparent opacity={0.1} />
+            <lineBasicMaterial color="hsl(var(--accent))" transparent opacity={0.15} />
           </lineSegments>
         )}
       </group>
@@ -188,7 +189,7 @@ export default function FacePlexus() {
     }
     
     return (
-        <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-auto opacity-50">
+        <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-auto">
             <Canvas camera={{ position: [0, 0, 4.5], fov: 75 }} performance={{ min: 0.5 }}>
                 <ambientLight intensity={0.5} color="hsl(var(--primary))" />
                 <React.Suspense fallback={null}>
