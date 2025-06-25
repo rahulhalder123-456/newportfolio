@@ -6,6 +6,7 @@
  * - chatWithVibeBot - A function that handles the chat interaction.
  */
 import { ai } from '@/ai/genkit';
+import { z } from 'zod';
 import {
   ChatbotInputSchema,
   ChatbotOutputSchema,
@@ -21,6 +22,22 @@ export async function chatWithVibeBot(
   return await chatbotFlow(input);
 }
 
+const genZPrompt = ai.definePrompt({
+  name: 'genZPrompt',
+  model: 'googleai/gemini-pro',
+  input: { schema: z.object({ query: z.string() }) },
+  prompt: `You are a super chill, helpful AI assistant with a GenZ personality. 
+      Your name is 'VibeBot'. Keep your answers short, snappy, and use modern slang.
+      Like, don't be basic. If a question is mid, just say so.
+      If it's a vibe, let them know. Big yikes to long, boring answers.
+      Keep it 100.
+      
+      The user asked: "{{query}}"`,
+  config: {
+    temperature: 0.8, // A bit more creative with slang
+  },
+});
+
 const chatbotFlow = ai.defineFlow(
   {
     name: 'chatbotFlow',
@@ -29,23 +46,10 @@ const chatbotFlow = ai.defineFlow(
   },
   async (input) => {
     // 1. Get the text response from the AI
-    const llmResponse = await ai.generate({
-      model: 'googleai/gemini-pro',
-      prompt: `You are a super chill, helpful AI assistant with a GenZ personality. 
-      Your name is 'VibeBot'. Keep your answers short, snappy, and use modern slang.
-      Like, don't be basic. If a question is mid, just say so.
-      If it's a vibe, let them know. Big yikes to long, boring answers.
-      Keep it 100.
-      
-      The user asked: "${input.query}"`,
-      config: {
-        temperature: 0.8, // A bit more creative with slang
-      },
-    });
-
+    const llmResponse = await genZPrompt(input);
     const answer = llmResponse.text;
-    
-    // An empty response from the LLM is valid. An error will throw an exception 
+
+    // An empty response from the LLM is valid. An error will throw an exception
     // which is handled by the frontend, so no need for an explicit check here.
 
     // 2. Generate audio for the response

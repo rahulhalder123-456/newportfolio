@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Text-to-Speech (TTS) AI flow.
@@ -6,6 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { z } from 'zod';
 import {
   TextToSpeechInputSchema,
   type TextToSpeechInput,
@@ -45,6 +47,21 @@ async function toWav(
   });
 }
 
+const ttsPrompt = ai.definePrompt({
+  name: 'ttsPrompt',
+  model: 'googleai/gemini-2.5-flash-preview-tts',
+  input: { schema: TextToSpeechInputSchema },
+  prompt: '{{text}}',
+  config: {
+    responseModalities: ['AUDIO'],
+    speechConfig: {
+      voiceConfig: {
+        prebuiltVoiceConfig: { voiceName: 'Palawan' },
+      },
+    },
+  },
+});
+
 const textToSpeechFlow = ai.defineFlow(
   {
     name: 'textToSpeechFlow',
@@ -52,19 +69,7 @@ const textToSpeechFlow = ai.defineFlow(
     outputSchema: TextToSpeechOutputSchema,
   },
   async (input) => {
-    const { media } = await ai.generate({
-      model: 'googleai/gemini-2.5-flash-preview-tts',
-      config: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            // A voice that fits the GenZ vibe
-            prebuiltVoiceConfig: { voiceName: 'Palawan' },
-          },
-        },
-      },
-      prompt: input.text,
-    });
+    const { media } = await ttsPrompt(input);
 
     if (!media?.url) {
       throw new Error('No media returned from TTS model');
