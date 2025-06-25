@@ -27,7 +27,7 @@ const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
-  imageUrl: z.string(),
+  imageUrl: z.string().optional(),
 });
 
 export default function EditProjectPage() {
@@ -71,7 +71,7 @@ export default function EditProjectPage() {
               router.replace("/admin");
           }
         } catch (error) {
-            toast({ title: "Error", description: "Could not load project data.", variant: "destructive" });
+            toast({ title: "Error Loading Project", description: getErrorMessage(error), variant: "destructive" });
         } finally {
             setIsLoading(false);
         }
@@ -82,7 +82,7 @@ export default function EditProjectPage() {
 
   const imageUrlValue = form.watch("imageUrl");
   useEffect(() => {
-    setGeneratedImageUrl(imageUrlValue);
+    setGeneratedImageUrl(imageUrlValue ?? null);
   }, [imageUrlValue]);
 
 
@@ -118,7 +118,7 @@ export default function EditProjectPage() {
         let userFriendlyMessage = errorMessage;
 
         if (errorMessage.includes("API key")) {
-            userFriendlyMessage = 'Authentication error. Please check if your GOOGLE_API_KEY is configured correctly in the .env.local file and that the server has been restarted.';
+            userFriendlyMessage = 'Authentication error. Please check that your GOOGLE_API_KEY is configured correctly in your environment variables (e.g., in your Vercel project settings for deployment) and that the server has been restarted.';
         }
 
         toast({
@@ -236,7 +236,7 @@ export default function EditProjectPage() {
                                   Project Image
                                 </CardTitle>
                                 <CardDescription>
-                                  Generate a unique image for your project using AI.
+                                  Generate a unique image for your project using AI. (Optional)
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center gap-4">

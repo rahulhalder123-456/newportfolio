@@ -71,7 +71,7 @@ const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
-  imageUrl: z.string(),
+  imageUrl: z.string().optional(),
 });
 
 export default function AdminPage() {
@@ -101,8 +101,8 @@ export default function AdminPage() {
       setProjects(loaded);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Could not load project data.",
+        title: "Error Loading Projects",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -122,7 +122,7 @@ export default function AdminPage() {
 
   const imageUrlValue = form.watch("imageUrl");
   useEffect(() => {
-    setGeneratedImageUrl(imageUrlValue);
+    setGeneratedImageUrl(imageUrlValue || null);
   }, [imageUrlValue]);
 
   const handleDelete = async (projectId: string) => {
@@ -180,7 +180,7 @@ export default function AdminPage() {
 
       if (errorMessage.includes("API key")) {
         userFriendlyMessage =
-          'Authentication error. Please check if your GOOGLE_API_KEY is configured correctly in the .env.local file and that the server has been restarted.';
+          'Authentication error. Please check that your GOOGLE_API_KEY is configured correctly in your environment variables (e.g., in your Vercel project settings for deployment) and that the server has been restarted.';
       }
 
       toast({
@@ -303,7 +303,7 @@ export default function AdminPage() {
                               Project Image
                             </CardTitle>
                             <CardDescription>
-                              Generate a unique image for your project using AI.
+                              Generate a unique image for your project using AI. (Optional)
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center gap-4">

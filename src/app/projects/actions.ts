@@ -25,34 +25,52 @@ export type Project = {
 };
 
 /**
+ * Creates a more helpful error message for common Firebase connection issues.
+ * @param error - The original error caught.
+ * @returns A user-friendly error string.
+ */
+function getEnhancedFirebaseErrorMessage(error: unknown): string {
+  const message = getErrorMessage(error);
+  // This specific string indicates a private key format issue, common on Vercel.
+  if (message.includes('DECODER routines::unsupported') || message.includes('Getting metadata from plugin failed')) {
+    return 'Firebase connection failed. This is likely due to an incorrect private key format in your environment variables. Please generate a new private key in your Firebase project settings and update the FIREBASE_PRIVATE_KEY value in your deployment settings. Make sure to replace all newline characters with the literal string "\\n".';
+  }
+  return message;
+}
+
+
+/**
  * Fetches all projects from the Firestore database, ordered by creation date.
- * This function will now throw an error if the database connection fails,
- * making deployment issues easier to debug.
  * @returns A promise that resolves to an array of projects.
  */
 export async function getProjects(): Promise<Project[]> {
-    // Order by 'createdAt' in descending order to get the newest projects first
-    const snapshot = await db.collection('projects').orderBy('createdAt', 'desc').get();
-    if (snapshot.empty) {
-        return [];
+    try {
+        const snapshot = await db.collection('projects').orderBy('createdAt', 'desc').get();
+        if (snapshot.empty) {
+            return [];
+        }
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
+    } catch (error) {
+        // Provide a clear error during server-side rendering if the connection fails.
+        throw new Error(getEnhancedFirebaseErrorMessage(error));
     }
-    // Note: Errors are intentionally not caught here to allow them to be surfaced by Next.js,
-    // which helps in diagnosing deployment/environment variable issues.
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
 }
 
 /**
  * Fetches a single project by its ID from Firestore.
- * Will throw an error if the database connection fails.
  * @param id - The unique identifier of the project document.
  * @returns A promise that resolves to the project object or null if not found.
  */
 export async function getProject(id: string): Promise<Project | null> {
-    const doc = await db.collection('projects').doc(id).get();
-    if (!doc.exists) {
-        return null;
+    try {
+        const doc = await db.collection('projects').doc(id).get();
+        if (!doc.exists) {
+            return null;
+        }
+        return { id: doc.id, ...doc.data() } as Project;
+    } catch (error) {
+        throw new Error(getEnhancedFirebaseErrorMessage(error));
     }
-    return { id: doc.id, ...doc.data() } as Project;
 }
 
 /**
@@ -79,7 +97,7 @@ export async function addProject(data: z.infer<typeof projectSchema>) {
         revalidatePath('/admin');
         return { success: true };
     } catch (error) {
-        return { error: getErrorMessage(error) };
+        return { error: getEnhancedFirebaseErrorMessage(error) };
     }
 }
 
@@ -87,7 +105,7 @@ export async function addProject(data: z.infer<typeof projectSchema>) {
  * Updates an existing project in the Firestore database.
  * @param id - The ID of the project to update.
  * @param data - The new project data.
- * @returns A promise that resolves to an object with a success flag or an error message.
+ *returns A promise that resolves to an object with a success flag or an error message.
  */
 export async function updateProject(id: string, data: z.infer<typeof projectSchema>) {
     const validatedFields = projectSchema.safeParse(data);
@@ -113,7 +131,7 @@ export async function updateProject(id: string, data: z.infer<typeof projectSche
         revalidatePath(`/admin/edit/${id}`);
         return { success: true };
     } catch (error) {
-        return { error: getErrorMessage(error) };
+        return { error: getEnhancedFirebaseErrorMessage(error) };
     }
 }
 
@@ -133,6 +151,6 @@ export async function deleteProject(id: string) {
         revalidatePath('/admin');
         return { success: true };
     } catch (error) {
-        return { error: getErrorMessage(error) };
+        return { error: getEnhancedFirebaseErrorMessage(error) };
     }
 }

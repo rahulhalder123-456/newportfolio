@@ -43,6 +43,15 @@ export default function LoginPage() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!CORRECT_PASSWORD) {
+        toast({
+            title: "Configuration Error",
+            description: "The admin password has not been set by the site owner. Please configure the NEXT_PUBLIC_ADMIN_PASSWORD environment variable in your deployment settings.",
+            variant: "destructive",
+        });
+        return;
+    }
+      
     if (values.password === CORRECT_PASSWORD) {
       sessionStorage.setItem("isAuthenticated", "true");
       router.replace("/admin");
