@@ -1,15 +1,16 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
 import ProjectCard from "./ProjectCard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getProjects, type Project } from "@/app/projects/actions";
+import { type Project } from "@/app/projects/actions";
 
 type ProjectsProps = {
+  projects: Project[];
+  isLoading?: boolean;
   limit?: number;
   showViewAllButton?: boolean;
   title?: string;
@@ -18,32 +19,15 @@ type ProjectsProps = {
 };
 
 export default function Projects({
+  projects = [],
+  isLoading = false,
   limit,
   showViewAllButton = false,
   title = "My Creations",
   description = "Here are some of the projects I've been working on.",
   className,
 }: ProjectsProps) {
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      setIsLoading(true);
-      try {
-        const projects = await getProjects();
-        setAllProjects(projects);
-      } catch (error) {
-        console.error("Failed to fetch projects", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProjects();
-  }, []);
-
-  const projectsToDisplay = limit ? allProjects.slice(0, limit) : allProjects;
+  const projectsToDisplay = limit ? projects.slice(0, limit) : projects;
 
   return (
     <section id="projects" className={cn("w-full text-center", className)}>
@@ -73,7 +57,7 @@ export default function Projects({
           )}
         </div>
 
-        {showViewAllButton && !isLoading && limit && allProjects.length > limit && (
+        {showViewAllButton && !isLoading && limit && projects.length > limit && (
           <div className="mt-12 text-center">
             <Button asChild>
               <Link href="/projects">

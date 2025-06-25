@@ -33,7 +33,7 @@ export default function ProjectCard({ id, title, summary, imageUrl }: ProjectCar
       </CardContent>
       <CardFooter>
         <Button asChild variant="link" className="p-0 h-auto text-accent hover:text-primary">
-          <Link href={`/projects/${id}`}>
+          <Link href={`/projects/${encodeURIComponent(id)}`}>
             View Details <ArrowRight className="w-4 h-4 ml-2" />
           </Link>
         </Button>
