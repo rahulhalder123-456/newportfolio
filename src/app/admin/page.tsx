@@ -139,18 +139,18 @@ export default function AdminPage() {
                 description: "The AI-powered image has been created.",
             });
         } else {
-            toast({
-                title: "Error",
-                description: "Could not generate image. Please try again.",
-                variant: "destructive",
-            });
+            throw new Error("The AI model did not return an image. This could be due to a timeout or an API issue.");
         }
     } catch (error) {
+        const placeholderUrl = "https://placehold.co/600x400.png";
+        form.setValue("imageUrl", placeholderUrl, { shouldValidate: true });
+        setGeneratedImageUrl(placeholderUrl);
         toast({
-            title: "Generation Failed",
-            description: getErrorMessage(error),
+            title: "AI Generation Failed",
+            description: "The AI likely timed out. A placeholder is being used. You can save the project and generate a new image later.",
             variant: "destructive",
         });
+        console.error("AI Generation Error:", getErrorMessage(error));
     } finally {
         setIsGenerating(false);
     }

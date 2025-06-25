@@ -3,62 +3,44 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, FileCode, Link as LinkIcon, Loader2, Sparkles, Image as ImageIcon, Edit, Trash2, LogOut } from "lucide-react";
+import { Save, FileCode, Link as LinkIcon, Loader2, Sparkles, Image as ImageIcon, ArrowLeft } from "lucide-react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { generateProjectImage } from "@/ai/flows/summarize-project-flow";
 import { getErrorMessage } from "@/lib/utils";
 import { compressImage } from "@/lib/client-utils";
-import { getProjects, addProject, deleteProject, type Project } from "@/app/projects/actions";
+import { getProject, updateProject } from "@/app/projects/actions";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
-  imageUrl: z.string().min(1, "Please generate an image."),
+  imageUrl: z.string().min(1, "Please generate or provide an image."),
 });
 
-export default function AdminPage() {
+export default function EditProjectPage() {
   const router = useRouter();
+  const params = useParams();
+  const projectId = params.id ? decodeURIComponent(params.id as string) : '';
+
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
-
-  useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem("isAuthenticated");
-    if (isAuthenticated === "true") {
-      setIsAuthorized(true);
-      loadProjects();
-    } else {
-      router.replace("/login");
-    }
-  }, [router]);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,49 +52,41 @@ export default function AdminPage() {
     },
   });
 
+  useEffect(() => {
+    const isAuthenticated = sessionStorage.getItem("isAuthenticated");
+    if (isAuthenticated !== "true") {
+      router.replace("/login");
+      return;
+    }
+    setIsAuthorized(true);
+
+    if (projectId) {
+      const fetchProject = async () => {
+        try {
+          const projectToEdit = await getProject(projectId);
+          if (projectToEdit) {
+              form.reset(projectToEdit);
+              setGeneratedImageUrl(projectToEdit.imageUrl);
+              setOriginalImageUrl(projectToEdit.imageUrl); // Store the original image
+          } else {
+              toast({ title: "Error", description: "Project not found.", variant: "destructive" });
+              router.replace("/admin");
+          }
+        } catch (error) {
+            toast({ title: "Error", description: "Could not load project data.", variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
+      };
+      fetchProject();
+    }
+  }, [router, projectId, form, toast]);
+
   const imageUrlValue = form.watch("imageUrl");
   useEffect(() => {
     setGeneratedImageUrl(imageUrlValue);
   }, [imageUrlValue]);
 
-  async function loadProjects() {
-    setIsLoadingProjects(true);
-    try {
-      const loadedProjects = await getProjects();
-      setProjects(loadedProjects);
-    } catch (error) {
-      console.error("Failed to load projects from database", error);
-      toast({
-        title: "Error",
-        description: "Could not load project data.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingProjects(false);
-    }
-  }
-
-  async function handleDelete(projectId: string) {
-    const result = await deleteProject(projectId);
-    if (result.success) {
-      toast({
-        title: "Project Deleted",
-        description: "The project has been removed.",
-      });
-      loadProjects(); // Refresh the list
-    } else {
-      toast({
-        title: "Error",
-        description: result.error || "Could not delete the project.",
-        variant: "destructive",
-      });
-    }
-  }
-
-  function handleLogout() {
-    sessionStorage.removeItem("isAuthenticated");
-    router.replace("/login");
-  }
 
   async function handleGenerateImage() {
     const title = form.getValues("title");
@@ -136,22 +110,21 @@ export default function AdminPage() {
             setGeneratedImageUrl(compressedUrl);
             toast({
                 title: "Image Generated!",
-                description: "The AI-powered image has been created.",
+                description: "The AI-powered image has been re-created.",
             });
         } else {
-            // This will be caught by the catch block below
-            throw new Error("The AI model did not return an image. This could be due to a timeout or an API issue.");
+            throw new Error("The AI model did not return an image.");
         }
     } catch (error) {
-        const placeholderUrl = "https://placehold.co/600x400.png";
-        form.setValue("imageUrl", placeholderUrl, { shouldValidate: true });
-        setGeneratedImageUrl(placeholderUrl);
+        if (originalImageUrl) {
+            form.setValue("imageUrl", originalImageUrl, { shouldValidate: true });
+            setGeneratedImageUrl(originalImageUrl);
+        }
         toast({
             title: "AI Generation Failed",
-            description: "Using a placeholder image. You can save the project and try generating a new image by editing it later.",
+            description: "The AI likely timed out. Reverted to the original image. You can try again.",
             variant: "destructive",
         });
-        // Also log the actual error to the console for debugging
         console.error("AI Generation Error:", getErrorMessage(error));
     } finally {
         setIsGenerating(false);
@@ -159,26 +132,17 @@ export default function AdminPage() {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const result = await addProject(values);
-
+    const result = await updateProject(projectId, values);
+    
     if (result.success) {
-      form.reset();
-      setGeneratedImageUrl(null);
-      toast({
-        title: "Project Added!",
-        description: "Your new project has been added to the database.",
-      });
-      loadProjects(); // Refresh the list
+      toast({ title: "Project Updated!", description: "Your changes have been saved." });
+      router.push("/admin");
     } else {
-      toast({
-        title: "Error",
-        description: result.error || "There was a problem saving your project.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: result.error || "Could not find project to update.", variant: "destructive" });
     }
   }
 
-  if (!isAuthorized) {
+  if (!isAuthorized || isLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
@@ -186,7 +150,7 @@ export default function AdminPage() {
             <div className="container text-center">
                 <LoadingSpinner />
                 <p className="text-lg text-muted-foreground animate-pulse">
-                    Verifying access...
+                    Loading project...
                 </p>
             </div>
         </main>
@@ -199,19 +163,21 @@ export default function AdminPage() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 py-12">
-        <section id="add-project" className="w-full">
+        <section id="edit-project" className="w-full">
           <div className="container">
             <div className="mx-auto max-w-2xl">
-              <div className="w-full flex justify-end mb-4">
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+              <div className="mb-4">
+                <Button asChild variant="outline" size="sm">
+                    <Link href="/admin">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Admin
+                    </Link>
                 </Button>
               </div>
               <Card>
                   <CardHeader>
-                      <CardTitle>Add a New Creation</CardTitle>
-                      <CardDescription>Fill out the form to add your project to the list.</CardDescription>
+                      <CardTitle>Edit Creation</CardTitle>
+                      <CardDescription>Update the details of your project below.</CardDescription>
                   </CardHeader>
                   <CardContent>
                       <Form {...form}>
@@ -317,7 +283,7 @@ export default function AdminPage() {
                                     ) : (
                                         <>
                                             <Sparkles className="mr-2 h-4 w-4" />
-                                            Generate Image with AI
+                                            Generate New Image
                                         </>
                                     )}
                                 </Button>
@@ -327,10 +293,10 @@ export default function AdminPage() {
                           <Button type="submit" className="w-full" disabled={isGenerating || form.formState.isSubmitting}>
                               {form.formState.isSubmitting ? (
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              ) : (
-                                  <PlusCircle className="mr-2 h-4 w-4" />
-                              )}
-                              Add Project
+                               ) : (
+                                  <Save className="mr-2 h-4 w-4" />
+                               )}
+                              Save Changes
                           </Button>
                       </form>
                       </Form>
@@ -338,62 +304,6 @@ export default function AdminPage() {
               </Card>
             </div>
           </div>
-        </section>
-
-        <section id="manage-projects" className="w-full mt-16">
-            <div className="container">
-                <div className="mx-auto max-w-2xl">
-                    <h3 className="text-2xl font-bold tracking-tighter mb-6 font-headline">Manage Creations</h3>
-                    <div className="space-y-4">
-                        {isLoadingProjects ? (
-                            <div className="text-center text-muted-foreground py-8">
-                                <Loader2 className="mx-auto h-8 w-8 animate-spin mb-2" />
-                                <p>Loading projects...</p>
-                            </div>
-                        ) : projects.length > 0 ? (
-                            projects.map(project => (
-                                <Card key={project.id} className="bg-secondary/50">
-                                    <CardContent className="p-4 flex items-center gap-4">
-                                        <Image src={project.imageUrl} alt={project.title} width={80} height={80} className="rounded-md aspect-[3/2] object-cover" />
-                                        <div className="flex-grow overflow-hidden">
-                                            <p className="font-semibold truncate">{project.title}</p>
-                                            <p className="text-sm text-muted-foreground truncate">{project.url}</p>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button asChild variant="outline" size="icon">
-                                                <Link href={`/admin/edit/${encodeURIComponent(project.id)}`}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="destructive" size="icon">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        This action cannot be undone. This will permanently delete your project from the database.
-                                                    </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(project.id)}>Delete</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))
-                        ) : (
-                            <p className="text-muted-foreground text-center py-8">No projects have been added yet.</p>
-                        )}
-                    </div>
-                </div>
-            </div>
         </section>
       </main>
       <Footer />
