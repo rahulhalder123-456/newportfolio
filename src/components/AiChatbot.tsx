@@ -25,6 +25,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const synthesisRef = useRef<SpeechSynthesis | null>(null);
@@ -32,6 +33,15 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       synthesisRef.current = window.speechSynthesis;
+      const loadVoices = () => {
+        setVoices(synthesisRef.current?.getVoices() ?? []);
+      };
+
+      // Voices often load asynchronously.
+      loadVoices();
+      if (synthesisRef.current) {
+        synthesisRef.current.onvoiceschanged = loadVoices;
+      }
     }
 
     setMessages([
@@ -50,21 +60,25 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
   
   const speak = (text: string) => {
     const synthesis = synthesisRef.current;
-    if (!synthesis) return;
+    if (!synthesis || voices.length === 0) return;
     
     synthesis.cancel(); // Stop any previous speech
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Simple voice selection - browsers handle this differently
-    const voices = synthesis.getVoices();
-    const preferredVoice = voices.find(voice => voice.lang.startsWith('en') && voice.name.toLowerCase().includes('female')) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+    // Voice selection for a "GenZ hacker" vibe.
+    // Prioritizes a standard, often clear Google voice, then a US female voice.
+    const preferredVoice = voices.find(voice => voice.name === 'Google US English') ||
+                          voices.find(voice => voice.lang === 'en-US' && voice.name.toLowerCase().includes('female')) ||
+                          voices.find(voice => voice.lang.startsWith('en-US')) ||
+                          voices.find(voice => voice.lang.startsWith('en')) ||
+                          voices[0]; // Fallback to the first available English voice
     
     if (preferredVoice) {
       utterance.voice = preferredVoice;
     }
 
-    utterance.rate = 1.15; // Faster speech
-    utterance.pitch = 1.1; // Slightly higher pitch for a more energetic feel
+    utterance.rate = 1.2; // A bit faster for a more energetic feel
+    utterance.pitch = 1.1; // Slightly higher pitch
 
     synthesis.speak(utterance);
   };
