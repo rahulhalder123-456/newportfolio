@@ -63,8 +63,8 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
     });
   });
 
-  // FIX: Check if the current model is the ape to apply a specific rotation.
-  // This hides a visual seam artifact in the original model file.
+  // FIX: Check if the current model is the ape to apply a specific rotation and scale.
+  // This combination of transforms is designed to hide a visual seam artifact in the original model file.
   const isApe = path.includes('ape.glb');
   const rotationFix = isApe ? [0, 0.3, 0] : [0, 0, 0];
   const scaleFix = isApe ? 1.15 : scale;
