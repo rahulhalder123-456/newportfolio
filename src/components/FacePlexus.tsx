@@ -112,7 +112,7 @@ function PointCloudFace() {
     return geometry;
   }, [particles]);
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const { pointer, viewport } = state;
     const targetMouseX = (pointer.x * viewport.width) / 2;
     const targetMouseY = (pointer.y * viewport.height) / 2;
@@ -122,9 +122,6 @@ function PointCloudFace() {
     
     if (lightRef.current) {
         lightRef.current.position.lerp(new THREE.Vector3(targetMouseX, targetMouseY, 2), 0.1);
-    }
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.05; // Add back very slow rotation for a "live" feel
     }
   });
 
