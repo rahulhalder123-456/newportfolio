@@ -2,15 +2,16 @@ import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 type ProjectCardProps = {
+  id: string;
   title: string;
   summary: string;
-  url: string;
   imageUrl: string;
 };
 
-export default function ProjectCard({ title, summary, url, imageUrl }: ProjectCardProps) {
+export default function ProjectCard({ id, title, summary, imageUrl }: ProjectCardProps) {
   return (
     <Card className="flex flex-col h-full bg-secondary border-2 border-transparent transition-all duration-300 hover:border-primary hover:shadow-primary/20 hover:shadow-lg hover:-translate-y-1 overflow-hidden group">
       <div className="aspect-[3/2] w-full overflow-hidden relative bg-black/20">
@@ -28,13 +29,13 @@ export default function ProjectCard({ title, summary, url, imageUrl }: ProjectCa
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-muted-foreground text-sm">{summary}</p>
+        <p className="text-muted-foreground text-sm line-clamp-4">{summary}</p>
       </CardContent>
       <CardFooter>
         <Button asChild variant="link" className="p-0 h-auto text-accent hover:text-primary">
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View on GitHub <ArrowRight className="w-4 h-4 ml-2" />
-          </a>
+          <Link href={`/projects/${id}`}>
+            View Details <ArrowRight className="w-4 h-4 ml-2" />
+          </Link>
         </Button>
       </CardFooter>
     </Card>
