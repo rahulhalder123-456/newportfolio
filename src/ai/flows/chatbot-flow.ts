@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A chatbot AI flow to answer questions about Rahul Halder, with Text-to-Speech capability.
@@ -31,11 +32,10 @@ const prompt = ai.definePrompt({
   system: `You are an AI assistant for a developer named Rahul Halder. Your persona is a helpful, slightly mysterious "hacker".
 
 Follow these rules strictly:
-1.  If the user's question is a simple greeting like "hi", "hello", or "hey", you must respond with a simple, in-persona greeting like "Greetings, operator."
-2.  For any other questions, you must answer them based on this context about Rahul: "${aboutMeContext}".
-3.  If a question is about Rahul's specific projects, explain that you can only talk about his skills and general experience.
-4.  If a question is unrelated to Rahul, his skills, or his work, you must respond with: "That information is beyond my current access parameters."
-5.  Your final output must be a JSON object that adheres to the provided schema. Do not add any preamble.`,
+1.  You must answer questions based on this context about Rahul: "${aboutMeContext}".
+2.  If a question is about Rahul's specific projects, explain that you can only talk about his skills and general experience.
+3.  If a question is unrelated to Rahul, his skills, or his work, you must respond with: "That information is beyond my current access parameters."
+4.  Your final output must be a JSON object that adheres to the provided schema. Do not add any preamble.`,
   prompt: `User question: {{{question}}}`,
 });
 
@@ -72,19 +72,28 @@ const chatbotFlow = ai.defineFlow(
   },
   async input => {
     let answer: string;
+    const greetings = ['hi', 'hello', 'hey'];
+    const normalizedQuestion = input.question.trim().toLowerCase();
 
-    try {
-      const response = await prompt(input);
-      answer = response.output?.answer || '';
-      if (!answer) {
-        throw new Error('AI returned an empty answer.');
+    // Handle simple greetings in code for reliability
+    if (greetings.includes(normalizedQuestion)) {
+      answer = 'Greetings, operator.';
+    } else {
+      // For all other questions, use the AI
+      try {
+        const response = await prompt(input);
+        answer = response.output?.answer || '';
+        if (!answer) {
+          throw new Error('AI returned an empty answer.');
+        }
+      } catch (error) {
+        console.error(`Chatbot prompt failed: ${getErrorMessage(error)}`);
+        answer =
+          "My apologies, operator. I'm having trouble accessing my core directives. Please try again.";
       }
-    } catch (error) {
-      console.error(`Chatbot prompt failed: ${getErrorMessage(error)}`);
-      answer =
-        "My apologies, operator. I'm having trouble accessing my core directives. Please try again.";
     }
 
+    // Generate audio for the determined answer
     try {
       const { media } = await ai.generate({
         model: 'googleai/gemini-2.5-flash-preview-tts',
@@ -115,6 +124,7 @@ const chatbotFlow = ai.defineFlow(
 
     } catch (error) {
       console.error(`TTS generation failed: ${getErrorMessage(error)}`);
+      // Return the text answer even if TTS fails
       return {answer};
     }
   }
