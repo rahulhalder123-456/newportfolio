@@ -19,6 +19,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Card,
@@ -39,7 +40,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import {
   PlusCircle,
@@ -51,12 +52,13 @@ import {
   Edit,
   Trash2,
   LogOut,
+  Star,
 } from "lucide-react";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
-
+import { cn } from "@/lib/utils";
 import { generateProjectImage } from "@/ai/flows/summarize-project-flow";
 import { getErrorMessage } from "@/lib/utils";
 import { compressImage } from "@/lib/client-utils";
@@ -64,6 +66,7 @@ import {
   getProjects,
   addProject,
   deleteProject,
+  toggleProjectFeatured,
   type Project,
 } from "../projects/actions";
 
@@ -72,6 +75,7 @@ const formSchema = z.object({
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
   imageUrl: z.string().optional(),
+  featured: z.boolean().default(false),
 });
 
 export default function AdminPage() {
@@ -91,6 +95,7 @@ export default function AdminPage() {
       summary: "",
       url: "",
       imageUrl: "",
+      featured: false,
     },
   });
 
@@ -141,6 +146,24 @@ export default function AdminPage() {
       });
     }
   };
+
+  const handleToggleFeatured = async (projectId: string, currentStatus: boolean) => {
+    const result = await toggleProjectFeatured(projectId, !currentStatus);
+    if (result.success) {
+      toast({
+        title: "Project Updated",
+        description: `Project has been ${!currentStatus ? 'featured' : 'unfeatured'}.`,
+      });
+      await loadProjects();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Could not update the project.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   const handleLogout = () => {
     sessionStorage.removeItem("isAuthenticated");
@@ -229,6 +252,8 @@ export default function AdminPage() {
       </div>
     );
   }
+
+  const featuredCount = projects.filter(p => p.featured).length;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -357,6 +382,31 @@ export default function AdminPage() {
                             </Button>
                         </CardFooter>
                       </Card>
+
+                      <FormField
+                        control={form.control}
+                        name="featured"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <FormLabel>Feature on Homepage</FormLabel>
+                                    <FormDescription>
+                                      {featuredCount >= 3 && !field.value 
+                                        ? "You can only feature 3 projects."
+                                        : "This project will appear on the home page."
+                                      }
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                      disabled={featuredCount >= 3 && !field.value}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                        />
                       
                       <Button type="submit" className="w-full" disabled={isGenerating || form.formState.isSubmitting}>
                           {form.formState.isSubmitting ? (
@@ -400,6 +450,13 @@ export default function AdminPage() {
                         </p>
                       </div>
                       <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleToggleFeatured(project.id, project.featured || false)}
+                        >
+                            <Star className={cn("h-4 w-4", project.featured && "text-primary fill-current")} />
+                        </Button>
                         <Button asChild variant="outline" size="icon">
                           <Link href={`/admin/edit/${project.id}`}>
                             <Edit className="h-4 w-4" />

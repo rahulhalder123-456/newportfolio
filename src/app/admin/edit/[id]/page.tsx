@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Save, FileCode, Link as LinkIcon, Loader2, Sparkles, Image as ImageIcon, ArrowLeft } from "lucide-react";
@@ -22,12 +22,14 @@ import { generateProjectImage } from "@/ai/flows/summarize-project-flow";
 import { getErrorMessage } from "@/lib/utils";
 import { compressImage } from "@/lib/client-utils";
 import { getProject, updateProject } from "@/app/projects/actions";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
   imageUrl: z.string().optional(),
+  featured: z.boolean().optional(),
 });
 
 export default function EditProjectPage() {
@@ -48,6 +50,7 @@ export default function EditProjectPage() {
       summary: "",
       url: "",
       imageUrl: "",
+      featured: false,
     },
   });
 
@@ -64,7 +67,10 @@ export default function EditProjectPage() {
         try {
           const projectToEdit = await getProject(projectId);
           if (projectToEdit) {
-              form.reset(projectToEdit);
+              form.reset({
+                ...projectToEdit,
+                featured: projectToEdit.featured || false,
+              });
               setGeneratedImageUrl(projectToEdit.imageUrl);
           } else {
               toast({ title: "Error", description: "Project not found.", variant: "destructive" });
@@ -291,6 +297,28 @@ export default function EditProjectPage() {
                             </CardFooter>
                           </Card>
                           
+                          <FormField
+                            control={form.control}
+                            name="featured"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                        <FormLabel>Feature on Homepage</FormLabel>
+                                        <FormDescription>
+                                        This project will appear first on the home page.
+                                        </FormDescription>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        disabled={isGenerating || form.formState.isSubmitting}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                          />
+
                           <Button type="submit" className="w-full" disabled={isGenerating || form.formState.isSubmitting}>
                               {form.formState.isSubmitting ? (
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

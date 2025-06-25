@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -11,11 +10,11 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import dynamic from 'next/dynamic';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import AnimatedTransition from '@/components/AnimatedTransition';
-import HyperloopDivider from '@/components/HyperloopDivider';
 import ChatbotToggler from '@/components/ChatbotToggler';
 import AiChatbot from '@/components/AiChatbot';
 import type { Project } from "@/app/projects/actions";
+import HyperloopDivider from './HyperloopDivider';
+import AnimatedTransition from './AnimatedTransition';
 
 const BackgroundArt = dynamic(() => import('@/components/BackgroundArt'), { ssr: false });
 
@@ -106,11 +105,10 @@ export default function HomeClient({ projects }: HomeClientProps) {
           </AnimatedTransition>
           <Projects
               projects={projects}
-              className="py-12 md:py-24 lg:py-32" 
-              limit={3} 
+              className="py-12 md:py-24 lg:py-32"
               showViewAllButton={true} 
-              title="Latest Creations"
-              description="Here are a few of my most recent projects. Feel free to explore more of my work on the projects page."
+              title="Featured Creations"
+              description="Here are a few of my projects I've selected to highlight. Feel free to explore more of my work on the projects page."
           />
           <HyperloopDivider />
           <Contact />

@@ -12,6 +12,7 @@ const projectSchema = z.object({
   summary: z.string().min(10, "Summary must be at least 10 characters."),
   url: z.string().url("Please enter a valid URL."),
   imageUrl: z.string().optional(),
+  featured: z.boolean().optional(),
 });
 
 // TypeScript type for a project, including its database ID
@@ -22,6 +23,7 @@ export type Project = {
   url: string;
   imageUrl: string;
   createdAt?: string; // Optional because it's added on the server
+  featured?: boolean;
 };
 
 /**
@@ -57,6 +59,35 @@ export async function getProjects(): Promise<Project[]> {
 }
 
 /**
+ * Fetches the top 3 featured projects from the Firestore database.
+ * @returns A promise that resolves to an array of featured projects.
+ */
+export async function getFeaturedProjects(): Promise<Project[]> {
+    try {
+        const snapshot = await db.collection('projects')
+            .where('featured', '==', true)
+            .get();
+
+        if (snapshot.empty) {
+            return [];
+        }
+
+        const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
+
+        // Sort by creation date descending in-memory and then take the top 3
+        return projects
+            .sort((a, b) => {
+                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return dateB - dateA;
+            })
+            .slice(0, 3);
+    } catch (error) {
+        throw new Error(getEnhancedFirebaseErrorMessage(error));
+    }
+}
+
+/**
  * Fetches a single project by its ID from Firestore.
  * @param id - The unique identifier of the project document.
  * @returns A promise that resolves to the project object or null if not found.
@@ -84,8 +115,16 @@ export async function addProject(data: z.infer<typeof projectSchema>) {
         return { error: 'Invalid data provided.' };
     }
     try {
+        if (validatedFields.data.featured) {
+            const featuredSnapshot = await db.collection('projects').where('featured', '==', true).get();
+            if (featuredSnapshot.size >= 3) {
+                return { error: 'You can only feature a maximum of 3 projects. Please unfeature another project first.' };
+            }
+        }
+
         const projectData = {
             ...validatedFields.data,
+            featured: validatedFields.data.featured || false,
             // Add a server-side timestamp for consistent ordering
             createdAt: new Date().toISOString()
         };
@@ -119,6 +158,14 @@ export async function updateProject(id: string, data: z.infer<typeof projectSche
             return { error: 'Project not found.' };
         }
         
+        const currentProject = doc.data() as Project;
+        if (validatedFields.data.featured && !currentProject.featured) {
+            const featuredSnapshot = await db.collection('projects').where('featured', '==', true).get();
+            if (featuredSnapshot.size >= 3) {
+                return { error: 'You can only feature a maximum of 3 projects. Please unfeature another project first.' };
+            }
+        }
+        
         const updateData: Partial<Project> = { ...validatedFields.data };
         
         await docRef.update(updateData);
@@ -129,6 +176,33 @@ export async function updateProject(id: string, data: z.infer<typeof projectSche
         revalidatePath('/admin');
         revalidatePath(`/projects/${id}`);
         revalidatePath(`/admin/edit/${id}`);
+        return { success: true };
+    } catch (error) {
+        return { error: getEnhancedFirebaseErrorMessage(error) };
+    }
+}
+
+/**
+ * Toggles the 'featured' status of a project.
+ * @param id The ID of the project to update.
+ * @param featured The new featured status.
+ * @returns A promise that resolves to an object with a success flag or an error message.
+ */
+export async function toggleProjectFeatured(id: string, featured: boolean) {
+    try {
+        if (featured) {
+            const featuredSnapshot = await db.collection('projects').where('featured', '==', true).get();
+            if (featuredSnapshot.size >= 3) {
+                return { error: 'You can only feature a maximum of 3 projects.' };
+            }
+        }
+
+        const docRef = db.collection('projects').doc(id);
+        await docRef.update({ featured });
+
+        revalidatePath('/');
+        revalidatePath('/admin');
+        revalidatePath('/projects');
         return { success: true };
     } catch (error) {
         return { error: getEnhancedFirebaseErrorMessage(error) };
