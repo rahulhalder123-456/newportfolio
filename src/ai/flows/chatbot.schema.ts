@@ -14,8 +14,12 @@ export const ChatbotInputSchema = z.object({
 });
 export type ChatbotInput = z.infer<typeof ChatbotInputSchema>;
 
-// The audioUrl and project-related schemas have been removed to simplify the flow and avoid quota issues.
 export const ChatbotOutputSchema = z.object({
   answer: z.string().describe("The chatbot's answer."),
+  audioUrl: z
+    .string()
+    .url()
+    .optional()
+    .describe('A data URI for the generated audio of the answer.'),
 });
 export type ChatbotOutput = z.infer<typeof ChatbotOutputSchema>;

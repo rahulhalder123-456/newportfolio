@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Send, Loader2, Terminal } from "lucide-react";
-import { askChatbot } from "@/ai/flows/chatbot-flow";
+import { Send, Loader2, Terminal, Volume2, VolumeX } from "lucide-react";
+import { askChatbot, type ChatbotOutput } from "@/ai/flows/chatbot-flow";
 import { getErrorMessage } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,8 +26,10 @@ export default function Chatbot() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     // Scroll to the bottom when messages change
@@ -39,6 +41,20 @@ export default function Chatbot() {
     }
   }, [messages]);
 
+  const handleAudioPlayback = (audioUrl: string) => {
+    if (audioRef.current) {
+      audioRef.current.src = audioUrl;
+      audioRef.current.play().catch(e => {
+        console.error("Audio playback failed:", e);
+        toast({
+          title: "Audio Error",
+          description: "Could not play audio.",
+          variant: "destructive",
+        });
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -49,10 +65,15 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const result = await askChatbot({ question: input });
+      const result: ChatbotOutput = await askChatbot({ question: input });
       if (result?.answer) {
         const assistantMessage: Message = { role: "assistant", content: result.answer };
         setMessages((prev) => [...prev, assistantMessage]);
+
+        if (isAudioEnabled && result.audioUrl) {
+          handleAudioPlayback(result.audioUrl);
+        }
+
       } else {
         throw new Error("Received an incomplete response from the AI.");
       }
@@ -71,6 +92,7 @@ export default function Chatbot() {
 
   return (
     <>
+      <audio ref={audioRef} className="hidden" />
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <motion.div
@@ -94,12 +116,23 @@ export default function Chatbot() {
           className="w-[400px] h-[550px] flex flex-col p-0 mr-4 mb-2 rounded-lg overflow-hidden bg-black border-2 border-accent/30 font-code shadow-lg shadow-accent/20"
           sideOffset={10}
         >
-          <header className="p-3 bg-accent/10 border-b border-accent/30 flex items-center gap-2">
-            <span className="text-accent">{'>'}</span>
-            <div>
-              <h3 className="font-bold text-lg text-foreground">AI Assistant</h3>
-              <p className="text-sm text-accent/80">session --user "operator"</p>
+          <header className="p-3 bg-accent/10 border-b border-accent/30 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-accent">{'>'}</span>
+              <div>
+                <h3 className="font-bold text-lg text-foreground">AI Assistant</h3>
+                <p className="text-sm text-accent/80">session --user "operator"</p>
+              </div>
             </div>
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsAudioEnabled(!isAudioEnabled)}
+                className="text-accent hover:bg-accent/20 hover:text-accent h-8 w-8"
+                aria-label={isAudioEnabled ? "Disable voice" : "Enable voice"}
+            >
+                {isAudioEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+            </Button>
           </header>
           
           <ScrollArea className="flex-1" ref={scrollAreaRef}>
