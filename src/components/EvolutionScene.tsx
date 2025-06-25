@@ -2,11 +2,10 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Suspense, useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef, useMemo } from 'react';
 import { OrbitControls, useGLTF, Preload, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Define model data with custom scales for each
 const modelData = [
   { path: '/models/ape.glb', scale: 1.0 },
   { path: '/models/homo_erectus.glb', scale: 1.5 },
@@ -14,51 +13,89 @@ const modelData = [
   { path: '/models/cyborg.glb', scale: 2.0 },
 ];
 
-// Preload all models
 modelData.forEach(data => useGLTF.preload(data.path));
+
+// The vertex shader simply passes the UV coordinates to the fragment shader.
+const vertexShader = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+// The fragment shader creates the disintegration effect.
+const fragmentShader = `
+  uniform float uProgress; // 0 = visible, 1 = disintegrated
+  uniform vec3 uColor;
+  varying vec2 vUv;
+
+  // A simple random function based on UV coordinates
+  float rand(vec2 n) { 
+    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+  }
+
+  void main() {
+    float random = rand(vUv);
+    
+    // Discard fragments if their random value is greater than the current visibility
+    // As uProgress increases, (1.0 - uProgress) decreases, so more fragments are discarded.
+    if (random > (1.0 - uProgress)) {
+      discard;
+    }
+
+    // The overall opacity also fades out as the model disintegrates.
+    gl_FragColor = vec4(uColor, 1.0 - uProgress);
+  }
+`;
 
 function SingleModel({ path, scale, isActive }: { path: string, scale: number, isActive: boolean }) {
   const { scene } = useGLTF(path);
-  const groupRef = useRef<THREE.Group>(null!);
 
+  // Memoize the shader uniforms so they persist for the lifetime of the component
+  const uniforms = useMemo(() => ({
+    uProgress: { value: 1.0 }, // Start fully disintegrated (invisible)
+    uColor: { value: new THREE.Color('white') },
+  }), []);
+
+  // When the scene is loaded, traverse it and apply our custom shader material to each mesh
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
-        // Enable shadows and transparency for fade effect
         child.castShadow = true;
-        child.material.transparent = true;
-        child.material.needsUpdate = true;
+        child.material = new THREE.ShaderMaterial({
+          uniforms,
+          vertexShader,
+          fragmentShader,
+          transparent: true, // Enable transparency for the fade-out effect
+        });
       }
     });
-  }, [scene]);
+  }, [scene, uniforms]);
 
-  useFrame(() => {
-    if (!groupRef.current) return;
+  // Use the main render loop to animate the disintegration effect
+  useFrame((state, delta) => {
+    // Determine the target progress based on whether the model should be active
+    const targetProgress = isActive ? 0.0 : 1.0;
+    const currentProgress = uniforms.uProgress.value;
     
-    const targetOpacity = isActive ? 1 : 0;
-
-    groupRef.current.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const material = child.material as THREE.MeshStandardMaterial;
-        // Smoothly interpolate opacity to fade in/out
-        material.opacity += (targetOpacity - material.opacity) * 0.05;
-      }
-    });
+    // Smoothly interpolate the progress value towards the target, creating the animation
+    // The multiplication factor (delta * 5.0) controls the speed of the transition.
+    uniforms.uProgress.value += (targetProgress - currentProgress) * (delta * 5.0);
   });
 
-  // Use the scale prop passed from modelData and adjust position
-  return <primitive object={scene} ref={groupRef} scale={scale} position={[0, -1.5, 0]} />;
+  return <primitive object={scene} scale={scale} position={[0, -1.5, 0]} />;
 }
 
 
 export default function EvolutionScene() {
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // This timer updates the active model index every 4 seconds, driving the animation cycle
   useEffect(() => {
     const interval = setInterval(() => {
-      // Cycle through the models
       setActiveIndex((current) => (current + 1) % modelData.length);
-    }, 4000); // Change model every 4 seconds
+    }, 4000); 
 
     return () => clearInterval(interval);
   }, []);
@@ -76,7 +113,7 @@ export default function EvolutionScene() {
               isActive={index === activeIndex} 
             />
           ))}
-          {/* Add a ground plane to receive shadows */}
+          {/* A ground plane to receive shadows, adding depth to the scene */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
               <planeGeometry args={[100, 100]} />
               <shadowMaterial opacity={0.4} />
@@ -90,18 +127,13 @@ export default function EvolutionScene() {
           castShadow 
           shadow-mapSize-width={1024}
           shadow-mapSize-height={1024}
-          shadow-camera-far={50}
-          shadow-camera-left={-10}
-          shadow-camera-right={10}
-          shadow-camera-top={10}
-          shadow-camera-bottom={-10}
         />
         
         <OrbitControls
           enableZoom={false}
           autoRotate
           autoRotateSpeed={0.5}
-          target={[0, 0.5, 0]} // Adjust target to focus on the model's center
+          target={[0, 0.5, 0]}
           minPolarAngle={Math.PI / 2.5}
           maxPolarAngle={Math.PI / 1.9}
         />
