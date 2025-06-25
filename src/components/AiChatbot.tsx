@@ -135,11 +135,11 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className="fixed bottom-20 right-4 w-[90vw] max-w-sm h-[70vh] max-h-[600px] z-50"
     >
-      <div className="relative flex flex-col h-full rounded-lg border border-primary/20 bg-background/80 backdrop-blur-md shadow-2xl shadow-primary/20 font-code overflow-hidden">
+      <div className="relative flex flex-col h-full rounded-lg border border-primary/20 bg-transparent shadow-2xl shadow-primary/20 font-code overflow-hidden">
         
         <EvolutionAnimation />
 
-        <header className="relative z-10 flex items-center justify-between p-3 border-b border-primary/20">
+        <header className="relative z-10 flex items-center justify-between p-3 border-b border-primary/20 bg-background/50 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <Bot className="h-6 w-6 text-primary animate-pulse" />
             <h3 className="font-bold text-lg text-primary">VibeBot</h3>
@@ -177,7 +177,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
                     'max-w-[80%] rounded-lg px-4 py-2 text-sm break-words',
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary'
+                      : 'bg-secondary/80 backdrop-blur-sm'
                   )}
                 >
                   <p>{message.text}</p>
@@ -194,7 +194,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <Bot className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="bg-secondary rounded-lg px-4 py-2">
+                  <div className="bg-secondary/80 backdrop-blur-sm rounded-lg px-4 py-2">
                      <Loader2 className="w-5 h-5 animate-spin"/>
                   </div>
               </div>
@@ -202,7 +202,7 @@ export default function AiChatbot({ onClose }: AiChatbotProps) {
           </div>
         </ScrollArea>
 
-        <footer className="relative z-10 p-3 border-t border-primary/20">
+        <footer className="relative z-10 p-3 border-t border-primary/20 bg-background/50 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <Input
               value={input}

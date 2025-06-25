@@ -82,7 +82,12 @@ Ape.displayName = "Ape";
 
 
 const HomoErectus = React.forwardRef((props, ref) => {
-    const model = useMemo(() => createFigure('#a1662f'), []);
+    const model = useMemo(() => {
+        const figure = createFigure('#a1662f');
+        const torso = figure.children[0] as THREE.Mesh;
+        torso.scale.x = 0.9;
+        return figure;
+    }, []);
     return <primitive ref={ref} object={model} {...props} />;
 });
 HomoErectus.displayName = "HomoErectus";
@@ -109,7 +114,7 @@ function EvolutionStage() {
   const models = useMemo(() => [Ape, HomoErectus, ModernHuman, Cyborg], []);
 
   // Animation timing configuration
-  const cycleDuration = 16; // 4 seconds per model
+  const cycleDuration = 20; // 5 seconds per model
   const transitionTime = 1.5; // How long it takes to fade in/out
   const stageDuration = cycleDuration / models.length;
 
@@ -153,8 +158,9 @@ function EvolutionStage() {
 // The main export that wraps the scene in a Canvas
 export default function EvolutionAnimation() {
   return (
-    <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+    <div className="absolute inset-0 z-0 pointer-events-none">
       <Canvas camera={{ position: [0, 1.5, 8], fov: 50 }}>
+        <color attach="background" args={['#111111']} />
         <ambientLight intensity={0.8} />
         <pointLight position={[5, 5, 5]} intensity={1.5} color="hsl(var(--primary))" />
         <pointLight position={[-5, 5, -5]} intensity={1} color="hsl(var(--accent))" />
