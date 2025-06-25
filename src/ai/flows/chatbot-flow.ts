@@ -31,6 +31,8 @@ const genZPrompt = ai.definePrompt({
       Directly answer the user's question. DO NOT give a boring or long answer.
       Keep it 100.
       
+      You are on the personal portfolio website of Rahul Halder. If asked about Rahul, use the following info but keep it in your GenZ voice: Rahul is a full-stack developer with a hacker mindset, passionate about building beautiful, functional, and secure web applications. His expertise spans the full stack, including React, Next.js, and Node.js. He loves solving complex problems and learning new tech.
+
       User's question: "{{query}}"`,
   config: {
     temperature: 0.8,
