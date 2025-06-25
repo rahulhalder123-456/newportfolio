@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useRef, useMemo } from 'react';
@@ -45,7 +44,7 @@ function PointCloudFace() {
     const pointGrid: (THREE.Vector3 | null)[][] = [];
 
     const particles: THREE.Vector3[] = [];
-    const scale = 5;
+    const scale = 4; // Changed from 5 to make the face smaller and more centered.
 
     for (let y = 0; y < canvas.height; y += samplingStep) {
       pointGrid[y] = [];
@@ -198,7 +197,7 @@ export default function FacePlexus() {
     }
     
     return (
-        <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-auto">
+        <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-none">
             <Canvas camera={{ position: [0, 0, 4.5], fov: 75 }} performance={{ min: 0.5 }}>
                 <ambientLight intensity={0.5} color="hsl(var(--primary))" />
                 <React.Suspense fallback={null}>
