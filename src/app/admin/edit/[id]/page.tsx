@@ -19,7 +19,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { generateProjectImage } from "@/ai/flows/summarize-project-flow";
-import { getErrorMessage, compressImage } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/utils";
+import { compressImage } from "@/lib/client-utils";
 import { getProject, updateProject } from "@/app/projects/actions";
 
 const formSchema = z.object({
