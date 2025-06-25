@@ -8,7 +8,7 @@ import * as THREE from 'three';
 
 // Data for each model: path and a scale factor to normalize their sizes.
 const modelData = [
-  { path: '/models/ape.glb', scale: 0.8 },
+  { path: '/models/ape.glb', scale: 1.2 }, // Adjusted scale for better presentation
   { path: '/models/homo_erectus.glb', scale: 1.5 },
   { path: '/models/modern_human.glb', scale: 1.5 },
   { path: '/models/cyborg.glb', scale: 2.5 },
@@ -38,8 +38,9 @@ function SingleModel({ path, scale, isActive }: { path: string, scale: number, i
         meshChild.material.transparent = true;
         // Start the model as completely invisible.
         meshChild.material.opacity = 0;
-        // Cast shadows for realism.
-        meshChild.castShadow = true;
+        // Disable shadow casting on all parts of the model.
+        meshChild.castShadow = false;
+        meshChild.receiveShadow = false;
       }
     });
     return newScene;
@@ -86,7 +87,7 @@ export default function EvolutionScene() {
 
   return (
     <div className="absolute inset-0 z-0">
-      <Canvas camera={{ position: [0, 0.5, 7], fov: 50 }} shadows>
+      <Canvas camera={{ position: [0, 0.5, 7], fov: 50 }}>
         {/* Suspense is a React feature for handling async operations like loading models. */}
         <Suspense fallback={null}>
           {/* Environment provides realistic, image-based lighting and reflections. */}
@@ -102,23 +103,13 @@ export default function EvolutionScene() {
               isActive={index === activeIndex} 
             />
           ))}
-
-          {/* This mesh acts as an invisible ground plane to receive shadows. */}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
-              <planeGeometry args={[100, 100]} />
-              <shadowMaterial opacity={0.4} />
-          </mesh>
         </Suspense>
 
         {/* --- Lighting Setup --- */}
         <ambientLight intensity={0.5} />
-        {/* A directional light acts like the sun and is the primary source for shadows. */}
         <directionalLight 
           position={[5, 5, 5]} 
           intensity={1.5} 
-          castShadow 
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
         />
         
         {/* Preload all assets for a smoother experience. */}
