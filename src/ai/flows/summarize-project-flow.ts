@@ -3,16 +3,24 @@
  * @fileOverview An AI flow to generate a project image from a title and summary.
  *
  * - generateProjectImage - A function that generates a project image.
+ * - ProjectImageInput - The input type for the generateProjectImage function.
+ * - ProjectImageOutput - The return type for the generateProjectImage function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
-import {
-    ProjectImageInputSchema,
-    type ProjectImageInput,
-    ProjectImageOutputSchema,
-    type ProjectImageOutput
-} from './summarize-project.schema';
+
+// Schemas are defined in this file for better clarity.
+export const ProjectImageInputSchema = z.object({
+  title: z.string().min(2).describe('The title of the project.'),
+  summary: z.string().min(10).describe('A summary of the project.'),
+});
+export type ProjectImageInput = z.infer<typeof ProjectImageInputSchema>;
+
+export const ProjectImageOutputSchema = z.object({
+  imageUrl: z.string().url().describe('A data URI for the generated project image.'),
+});
+export type ProjectImageOutput = z.infer<typeof ProjectImageOutputSchema>;
 
 // Exported wrapper function to be called from the UI
 export async function generateProjectImage(input: ProjectImageInput): Promise<ProjectImageOutput> {
