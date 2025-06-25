@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useRef, useMemo } from 'react';
-import { Canvas, useLoader } from '@react-three/fiber';
+import { Canvas, useLoader, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { type Mesh, type PointLight } from 'three';
 
