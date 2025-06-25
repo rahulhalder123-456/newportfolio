@@ -29,7 +29,6 @@ export default function Chatbot() {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     // Scroll to the bottom when messages change
@@ -42,17 +41,15 @@ export default function Chatbot() {
   }, [messages]);
 
   const handleAudioPlayback = (audioUrl: string) => {
-    if (audioRef.current) {
-      audioRef.current.src = audioUrl;
-      audioRef.current.play().catch(e => {
+    const audio = new Audio(audioUrl);
+    audio.play().catch(e => {
         console.error("Audio playback failed:", e);
         toast({
-          title: "Audio Error",
-          description: "Could not play audio.",
-          variant: "destructive",
+            title: "Audio Playback Error",
+            description: "Could not play audio automatically. Your browser might be blocking it.",
+            variant: "destructive",
         });
-      });
-    }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -92,7 +89,6 @@ export default function Chatbot() {
 
   return (
     <>
-      <audio ref={audioRef} className="hidden" />
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <motion.div
