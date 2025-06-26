@@ -42,7 +42,7 @@ export default function About() {
 
 
   return (
-    <section id="about" className="relative w-full py-12 md:py-24 lg:py-32 bg-background flex items-start md:items-center overflow-y-auto no-scrollbar">
+    <section className="relative w-full py-12 md:py-24 lg:py-32 bg-background flex items-start md:items-center overflow-y-auto no-scrollbar">
       <div className="absolute inset-0 opacity-5 lg:opacity-10 pointer-events-none">
         <AtomicModel />
       </div>
@@ -82,7 +82,7 @@ export default function About() {
               variants={itemVariants}
             >
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">About Me</h2>
-              <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              <p className="text-muted-foreground text-base/relaxed md:text-lg/relaxed xl:text-xl/relaxed">
                 I'm a full-stack developer with a hacker mindset, passionate about building beautiful, functional, and secure web applications. My expertise spans across the stack, from crafting intuitive front-end experiences with React and Next.js to architecting robust back-end systems with Node.js. I thrive on solving complex problems, exploring system intricacies, and continuously learning new technologies to push the boundaries of what's possible.
               </p>
             </motion.div>

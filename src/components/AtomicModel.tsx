@@ -20,7 +20,7 @@ const NetworkStructure = () => {
     
     const { atoms, bonds } = useMemo(() => {
         const numAtoms = 30;
-        const volumeSize = 20;
+        const volumeSize = 15;
         const bondThreshold = 2.8;
         const atomPoints = [];
 

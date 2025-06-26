@@ -31,7 +31,7 @@ export default function AnimatedTransition({ children }: AnimatedTransitionProps
   const afterScale = useTransform(scrollYProgress, [0.65, 1], [0.8, 1]);
 
   return (
-    <div ref={containerRef} className="relative h-[300vh] w-full">
+    <div ref={containerRef} className="relative h-[250vh] md:h-[300vh] w-full">
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
         <motion.div
           style={{ opacity: hyperloopOpacity }}

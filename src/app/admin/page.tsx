@@ -455,9 +455,9 @@ export default function AdminPage() {
                                 <div className="space-y-0.5">
                                     <FormLabel>Feature on Homepage</FormLabel>
                                     <FormDescription>
-                                      {featuredCount >= 3 && !field.value 
+                                      {featuredCount >= 3 && !field.value
                                         ? "You can only feature 3 projects."
-                                        : "This project will appear on the home page."
+                                        : "This project will appear first on the home page."
                                       }
                                     </FormDescription>
                                 </div>

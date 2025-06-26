@@ -16,7 +16,7 @@ const AnimatedSphere = () => {
   });
 
   return (
-    <Sphere ref={ref} args={[1.2, 64, 64]}>
+    <Sphere ref={ref} args={[1.0, 64, 64]}>
       <MeshDistortMaterial
         color="hsl(var(--primary))"
         attach="material"
