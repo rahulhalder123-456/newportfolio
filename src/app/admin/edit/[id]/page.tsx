@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Save, FileCode, Link as LinkIcon, Loader2, Sparkles, Image as ImageIcon, ArrowLeft } from "lucide-react";
+import { Save, FileCode, Link as LinkIcon, Loader2, Sparkles, Image as ImageIcon, ArrowLeft, Upload } from "lucide-react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -36,6 +36,7 @@ export default function EditProjectPage() {
   const router = useRouter();
   const params = useParams();
   const projectId = params.id ? decodeURIComponent(params.id as string) : '';
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -90,6 +91,50 @@ export default function EditProjectPage() {
   useEffect(() => {
     setGeneratedImageUrl(imageUrlValue ?? null);
   }, [imageUrlValue]);
+
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target?.result as string;
+        if (dataUrl) {
+          try {
+            const compressed = await compressImage(dataUrl);
+            form.setValue("imageUrl", compressed, { shouldValidate: true });
+            toast({
+              title: "Image Uploaded!",
+              description: "Your new image is ready to be saved.",
+            });
+          } catch (error) {
+             toast({
+              title: "Image Processing Failed",
+              description: getErrorMessage(error),
+              variant: "destructive",
+            });
+          }
+        }
+      };
+      reader.onerror = () => {
+        toast({
+          title: "File Read Error",
+          description: "Could not read the selected file.",
+          variant: "destructive",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
 
   async function handleGenerateImage() {
@@ -242,7 +287,7 @@ export default function EditProjectPage() {
                                   Project Image
                                 </CardTitle>
                                 <CardDescription>
-                                  Generate a unique image for your project using AI. (Optional)
+                                  Generate a new image with AI or upload your own.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center gap-4">
@@ -273,27 +318,46 @@ export default function EditProjectPage() {
                                     </FormItem>
                                 )}
                                 />
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                    accept="image/png, image/jpeg, image/webp"
+                                />
                             </CardContent>
                             <CardFooter>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={handleGenerateImage}
-                                    disabled={isGenerating || form.formState.isSubmitting}
-                                >
-                                    {isGenerating ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Generating...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Sparkles className="mr-2 h-4 w-4" />
-                                            Generate New Image
-                                        </>
-                                    )}
-                                </Button>
+                                <div className="grid w-full grid-cols-2 gap-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isGenerating || form.formState.isSubmitting}
+                                    >
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Upload New Image
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full"
+                                        onClick={handleGenerateImage}
+                                        disabled={isGenerating || form.formState.isSubmitting}
+                                    >
+                                        {isGenerating ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Generating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles className="mr-2 h-4 w-4" />
+                                                Generate New Image
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </CardFooter>
                           </Card>
                           

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -53,6 +53,7 @@ import {
   Trash2,
   LogOut,
   Star,
+  Upload,
 } from "lucide-react";
 
 import Header from "@/components/Header";
@@ -81,6 +82,7 @@ const formSchema = z.object({
 export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -168,6 +170,49 @@ export default function AdminPage() {
   const handleLogout = () => {
     sessionStorage.removeItem("isAuthenticated");
     router.replace("/login");
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target?.result as string;
+        if (dataUrl) {
+          try {
+            const compressed = await compressImage(dataUrl);
+            form.setValue("imageUrl", compressed, { shouldValidate: true });
+            toast({
+              title: "Image Uploaded!",
+              description: "Your image is ready to be saved with the project.",
+            });
+          } catch (error) {
+             toast({
+              title: "Image Processing Failed",
+              description: getErrorMessage(error),
+              variant: "destructive",
+            });
+          }
+        }
+      };
+      reader.onerror = () => {
+        toast({
+          title: "File Read Error",
+          description: "Could not read the selected file.",
+          variant: "destructive",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleGenerateImage = async () => {
@@ -328,7 +373,7 @@ export default function AdminPage() {
                               Project Image
                             </CardTitle>
                             <CardDescription>
-                              Generate a unique image for your project using AI. (Optional)
+                              Upload your own image or generate one with AI.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center gap-4">
@@ -343,7 +388,7 @@ export default function AdminPage() {
                             ) : (
                                 <div className="text-center text-muted-foreground p-4">
                                     <ImageIcon className="mx-auto h-12 w-12" />
-                                    <p className="mt-2 text-sm">Your generated image will appear here.</p>
+                                    <p className="mt-2 text-sm">Your uploaded or generated image will appear here.</p>
                                 </div>
                             )}
                            </div>
@@ -359,27 +404,46 @@ export default function AdminPage() {
                                 </FormItem>
                             )}
                             />
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileSelect}
+                                className="hidden"
+                                accept="image/png, image/jpeg, image/webp"
+                            />
                         </CardContent>
                         <CardFooter>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full"
-                                onClick={handleGenerateImage}
-                                disabled={isGenerating || form.formState.isSubmitting}
-                            >
-                                {isGenerating ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Generating...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Sparkles className="mr-2 h-4 w-4" />
-                                        Generate Image with AI
-                                    </>
-                                )}
-                            </Button>
+                            <div className="grid w-full grid-cols-2 gap-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isGenerating || form.formState.isSubmitting}
+                                >
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Upload Image
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={handleGenerateImage}
+                                    disabled={isGenerating || form.formState.isSubmitting}
+                                >
+                                    {isGenerating ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="mr-2 h-4 w-4" />
+                                            Generate with AI
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
                         </CardFooter>
                       </Card>
 
