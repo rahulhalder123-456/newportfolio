@@ -20,30 +20,38 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault();
     if (pathname === '/') {
-        const aboutSection = document.getElementById('about');
-        if (aboutSection) {
-            const endPosition = aboutSection.offsetTop + aboutSection.offsetHeight - window.innerHeight;
+      const element = document.getElementById(sectionId);
+      if (element) {
+        // The "About" section is within an animated container, so we need to
+        // calculate the final scroll position differently.
+        if (sectionId === 'about') {
+            const endPosition = element.offsetTop + element.offsetHeight - window.innerHeight;
             window.scrollTo({ top: endPosition, behavior: 'smooth' });
+        } else {
+            element.scrollIntoView({ behavior: 'smooth' });
         }
+      }
     } else {
-        router.push('/#about');
+      // If on another page, store the target section and navigate to homepage.
+      // The homepage will handle the scrolling.
+      sessionStorage.setItem('scrollTo', sectionId);
+      router.push('/');
     }
   };
 
-
   const projectsHref = '/projects';
-  // Always use the full path for anchor links.
-  // This helps ensure consistent behavior when navigating from other pages.
+  // Hrefs are kept for semantics and right-click > open in new tab behavior,
+  // but onClick handles the smooth scrolling.
   const aboutHref = '/#about';
   const contactHref = '/#contact';
 
   const navLinks = [
-    { href: aboutHref, label: 'About' },
+    { href: aboutHref, label: 'About', sectionId: 'about' },
     { href: projectsHref, label: 'Projects' },
-    { href: contactHref, label: 'Contact' },
+    { href: contactHref, label: 'Contact', sectionId: 'contact' },
   ];
 
   const socialLinks = [
@@ -63,8 +71,8 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           {navLinks.map(link => {
-             if (link.label === 'About') {
-                return <a key={link.label} href={link.href} onClick={handleAboutClick} className="text-muted-foreground transition-colors hover:text-primary cursor-pointer">{link.label}</a>
+             if (link.sectionId) {
+                return <a key={link.label} href={link.href} onClick={(e) => handleNavClick(e, link.sectionId!)} className="text-muted-foreground transition-colors hover:text-primary cursor-pointer">{link.label}</a>
              }
              return <Link key={link.label} href={link.href} className="text-muted-foreground transition-colors hover:text-primary">{link.label}</Link>
           })}
@@ -107,8 +115,8 @@ export default function Header() {
                 <nav className="flex flex-col p-6 space-y-4">
                   {navLinks.map(link => (
                     <SheetClose asChild key={link.label}>
-                       {link.label === 'About' ? (
-                        <a href={link.href} onClick={handleAboutClick} className="text-lg font-medium text-foreground transition-colors hover:text-primary cursor-pointer">{link.label}</a>
+                       {link.sectionId ? (
+                        <a href={link.href} onClick={(e) => handleNavClick(e, link.sectionId!)} className="text-lg font-medium text-foreground transition-colors hover:text-primary cursor-pointer">{link.label}</a>
                        ) : (
                         <Link href={link.href} className="text-lg font-medium text-foreground transition-colors hover:text-primary">{link.label}</Link>
                        )}

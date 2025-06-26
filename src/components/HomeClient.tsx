@@ -37,21 +37,21 @@ export default function HomeClient({ projects, error = null }: HomeClientProps) 
 
   useEffect(() => {
     // This effect handles scrolling when a user navigates from another page
-    // directly to the #about section.
-    if (window.location.hash === '#about') {
-        const aboutSection = document.getElementById('about');
-        if (aboutSection) {
+    // to a specific section on the homepage (e.g., about, contact).
+    const sectionToScroll = sessionStorage.getItem('scrollTo');
+    if (sectionToScroll) {
+        const element = document.getElementById(sectionToScroll);
+        if (element) {
             // A timeout ensures the page has had time to layout, so our measurements are correct.
             const timer = setTimeout(() => {
-                const endPosition = aboutSection.offsetTop + aboutSection.offsetHeight - window.innerHeight;
-                window.scrollTo({
-                    top: endPosition,
-                    behavior: 'smooth'
-                });
-                // Clean the URL hash after scrolling
-                if (history.replaceState) {
-                  history.replaceState(null, '', ' ');
+                if (sectionToScroll === 'about') {
+                    const endPosition = element.offsetTop + element.offsetHeight - window.innerHeight;
+                    window.scrollTo({ top: endPosition, behavior: 'smooth' });
+                } else {
+                    element.scrollIntoView({ behavior: 'smooth' });
                 }
+                // Clean up the sessionStorage item after scrolling.
+                sessionStorage.removeItem('scrollTo');
             }, 100);
             return () => clearTimeout(timer);
         }
