@@ -27,9 +27,10 @@ const loadingSteps = [
 
 type HomeClientProps = {
   projects: Project[];
+  error?: string | null;
 };
 
-export default function HomeClient({ projects }: HomeClientProps) {
+export default function HomeClient({ projects, error = null }: HomeClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingStep, setLoadingStep] = useState(0);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -105,6 +106,7 @@ export default function HomeClient({ projects }: HomeClientProps) {
           </AnimatedTransition>
           <Projects
               projects={projects}
+              error={error}
               className="py-12 md:py-24 lg:py-32"
               showViewAllButton={true} 
               title="Featured Creations"

@@ -37,6 +37,9 @@ function getEnhancedFirebaseErrorMessage(error: unknown): string {
   if (message.includes('DECODER routines::unsupported') || message.includes('Getting metadata from plugin failed')) {
     return 'Firebase connection failed. This is likely due to an incorrect private key format in your environment variables. Please generate a new private key in your Firebase project settings and update the FIREBASE_PRIVATE_KEY value in your deployment settings. Make sure to replace all newline characters with the literal string "\\n".';
   }
+  if (message.includes('UNAUTHENTICATED')) {
+    return 'Firebase authentication failed. This almost always means your FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, or FIREBASE_PRIVATE_KEY environment variables are incorrect on your hosting platform. Please double-check them in your Vercel project settings.';
+  }
   return message;
 }
 

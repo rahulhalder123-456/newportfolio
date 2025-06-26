@@ -1,7 +1,8 @@
+
 'use server';
 
 import { z } from 'zod';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { getErrorMessage } from '@/lib/utils';
 
 const sendEmailSchema = z.object({
@@ -12,7 +13,9 @@ const sendEmailSchema = z.object({
 
 type SendEmailInput = z.infer<typeof sendEmailSchema>;
 
-const resendApiKey = process.env.RESEND_API_KEY;
+const gmailEmail = process.env.GMAIL_EMAIL;
+// Remove any spaces from the app password to prevent common copy-paste errors.
+const gmailAppPassword = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, '');
 const toEmail = process.env.EMAIL_RECIPIENT;
 
 export async function sendEmail(input: SendEmailInput) {
@@ -29,33 +32,37 @@ export async function sendEmail(input: SendEmailInput) {
       return { error: 'Server configuration error: Missing recipient email. Please contact the site administrator.' };
   }
 
-  if (!resendApiKey || resendApiKey === 'REPLACE_WITH_YOUR_RESEND_API_KEY') {
-    console.error('RESEND_API_KEY environment variable is not set or is a placeholder.');
-    return { error: 'Server configuration error: Email service is not configured. Please contact the site administrator.' };
+  if (!gmailEmail || !gmailAppPassword) {
+    console.error('Nodemailer environment variables are not set.');
+    return { error: 'Server configuration error: The email service is not set up. Please ensure GMAIL_EMAIL and GMAIL_APP_PASSWORD are in your environment variables. Note: GMAIL_APP_PASSWORD is a special password you must generate from your Google Account settings. See the README.md for instructions.' };
   }
 
-  const resend = new Resend(resendApiKey);
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: gmailEmail,
+      pass: gmailAppPassword,
+    },
+  });
+
   const { name, email, message } = validatedFields.data;
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'Rahul Halder <onboarding@resend.dev>',
+    const mailOptions = {
+      from: `"Rahul Halder Portfolio" <${gmailEmail}>`,
       to: toEmail,
       subject: `New message from ${name} via portfolio`,
-      reply_to: email,
+      replyTo: email,
       html: `<p>You have received a new message from your portfolio contact form.</p>
              <p><strong>Name:</strong> ${name}</p>
              <p><strong>Email:</strong> ${email}</p>
              <p><strong>Message:</strong></p>
              <p>${message}</p>`,
-    });
+    };
 
-    if (error) {
-        console.error("Resend API Error:", error);
-        return { error: `API Error: ${getErrorMessage(error)}` };
-    }
-
+    await transporter.sendMail(mailOptions);
     return { success: true };
+
   } catch (exception) {
     console.error("Caught exception in sendEmail:", exception);
     return {

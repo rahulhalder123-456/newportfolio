@@ -4,7 +4,7 @@
 import ProjectCard from "./ProjectCard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type Project } from "@/app/projects/actions";
 
@@ -16,6 +16,7 @@ type ProjectsProps = {
   title?: string;
   description?: string;
   className?: string;
+  error?: string | null;
 };
 
 export default function Projects({
@@ -26,6 +27,7 @@ export default function Projects({
   title = "My Creations",
   description = "Here are some of the projects I've been working on.",
   className,
+  error = null,
 }: ProjectsProps) {
   const projectsToDisplay = limit ? projects.slice(0, limit) : projects;
 
@@ -44,6 +46,19 @@ export default function Projects({
             <div className="flex justify-center items-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
+          ) : error ? (
+            <div className="py-12 text-left max-w-3xl mx-auto">
+                <div className="bg-destructive/10 border-l-4 border-destructive text-destructive-foreground p-4 rounded-md flex items-start gap-4" role="alert">
+                    <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-1" />
+                    <div>
+                        <h3 className="font-bold">Error Loading Projects</h3>
+                        <p className="text-sm mt-1">{error}</p>
+                        <p className="text-xs mt-2 text-muted-foreground">
+                            This typically happens when environment variables (like API keys) are not set up correctly on the hosting server. Please double-check your project's configuration.
+                        </p>
+                    </div>
+                </div>
+            </div>
           ) : projectsToDisplay.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 text-left">
               {projectsToDisplay.map((project) => (
@@ -57,7 +72,7 @@ export default function Projects({
           )}
         </div>
 
-        {showViewAllButton && !isLoading && projectsToDisplay.length > 0 && (
+        {showViewAllButton && !isLoading && !error && projectsToDisplay.length > 0 && (
           <div className="mt-12 text-center">
             <Button asChild>
               <Link href="/projects">
