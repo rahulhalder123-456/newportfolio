@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Rahul Halder',
   description: "A portfolio for Rahul Halder, a hacker and full-stack developer.",
   icons: {
-    icon: '/mine.png',
+    icon: 'src/app/favicon.ico',
   },
 };
 
