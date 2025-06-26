@@ -36,6 +36,29 @@ export default function HomeClient({ projects, error = null }: HomeClientProps) 
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   useEffect(() => {
+    // This effect handles scrolling when a user navigates from another page
+    // directly to the #about section.
+    if (window.location.hash === '#about') {
+        const aboutSection = document.getElementById('about');
+        if (aboutSection) {
+            // A timeout ensures the page has had time to layout, so our measurements are correct.
+            const timer = setTimeout(() => {
+                const endPosition = aboutSection.offsetTop + aboutSection.offsetHeight - window.innerHeight;
+                window.scrollTo({
+                    top: endPosition,
+                    behavior: 'smooth'
+                });
+                // Clean the URL hash after scrolling
+                if (history.replaceState) {
+                  history.replaceState(null, '', ' ');
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount.
+
+  useEffect(() => {
     // Animate the loading text
     const textInterval = setInterval(() => {
         setLoadingStep(prev => {
@@ -100,10 +123,12 @@ export default function HomeClient({ projects, error = null }: HomeClientProps) 
         <Header />
         <main className="flex-1 relative overflow-x-clip">
           <BackgroundArt />
-          <AnimatedTransition>
-            <Hero />
-            <About />
-          </AnimatedTransition>
+          <div id="about">
+            <AnimatedTransition>
+              <Hero />
+              <About />
+            </AnimatedTransition>
+          </div>
           <Projects
               projects={projects}
               error={error}

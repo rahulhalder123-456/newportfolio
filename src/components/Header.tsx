@@ -1,8 +1,8 @@
 
 'use client';
 
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { CodeXml, Github, Linkedin, Briefcase, Menu } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -18,11 +18,27 @@ import { Button } from '@/components/ui/button';
 
 export default function Header() {
   const pathname = usePathname();
-  const isHomePage = pathname === '/';
+  const router = useRouter();
+
+  const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (pathname === '/') {
+        const aboutSection = document.getElementById('about');
+        if (aboutSection) {
+            const endPosition = aboutSection.offsetTop + aboutSection.offsetHeight - window.innerHeight;
+            window.scrollTo({ top: endPosition, behavior: 'smooth' });
+        }
+    } else {
+        router.push('/#about');
+    }
+  };
+
 
   const projectsHref = '/projects';
-  const aboutHref = isHomePage ? '#about' : '/#about';
-  const contactHref = isHomePage ? '#contact' : '/#contact';
+  // Always use the full path for anchor links.
+  // This helps ensure consistent behavior when navigating from other pages.
+  const aboutHref = '/#about';
+  const contactHref = '/#contact';
 
   const navLinks = [
     { href: aboutHref, label: 'About' },
@@ -46,9 +62,12 @@ export default function Header() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-          {navLinks.map(link => (
-            <Link key={link.label} href={link.href} className="text-muted-foreground transition-colors hover:text-primary">{link.label}</Link>
-          ))}
+          {navLinks.map(link => {
+             if (link.label === 'About') {
+                return <a key={link.label} href={link.href} onClick={handleAboutClick} className="text-muted-foreground transition-colors hover:text-primary cursor-pointer">{link.label}</a>
+             }
+             return <Link key={link.label} href={link.href} className="text-muted-foreground transition-colors hover:text-primary">{link.label}</Link>
+          })}
         </nav>
         <div className="hidden md:flex items-center ml-6 space-x-4">
           <Separator orientation="vertical" className="h-6"/>
@@ -88,7 +107,11 @@ export default function Header() {
                 <nav className="flex flex-col p-6 space-y-4">
                   {navLinks.map(link => (
                     <SheetClose asChild key={link.label}>
-                      <Link href={link.href} className="text-lg font-medium text-foreground transition-colors hover:text-primary">{link.label}</Link>
+                       {link.label === 'About' ? (
+                        <a href={link.href} onClick={handleAboutClick} className="text-lg font-medium text-foreground transition-colors hover:text-primary cursor-pointer">{link.label}</a>
+                       ) : (
+                        <Link href={link.href} className="text-lg font-medium text-foreground transition-colors hover:text-primary">{link.label}</Link>
+                       )}
                     </SheetClose>
                   ))}
                 </nav>
