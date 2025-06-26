@@ -3,13 +3,13 @@ import type {Metadata} from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: 'Rahul Halder',
-  description: "A portfolio for Rahul Halder, a hacker and full-stack developer.",
-  icons: {
-    icon: 'src/app/favicon.ico',
-  },
-};
+// export const metadata: Metadata = {
+//   title: 'Rahul Halder',
+//   description: "A portfolio for Rahul Halder, a hacker and full-stack developer.",
+//   icons: {
+//     icon: 'src/app/favicon.ico',
+//   },
+// };
 
 export default function RootLayout({
   children,
