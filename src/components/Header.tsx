@@ -57,7 +57,7 @@ export default function Header() {
   const socialLinks = [
     { href: 'https://github.com/rahulhalder123-456', label: 'Github', icon: Github },
     { href: 'https://www.linkedin.com/in/rahul-halder-755756264/', label: 'LinkedIn', icon: Linkedin },
-    { href: 'https://talentflow-app.vercel.app/', label: 'TalentFlow', icon: Briefcase },
+    { href: 'https://talentflow-ai.vercel.app/', label: 'TalentFlow', icon: Briefcase },
   ];
 
   return (
